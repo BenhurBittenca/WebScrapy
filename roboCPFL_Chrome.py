@@ -137,7 +137,7 @@ for buttons in soup.find_all('img'):
 
 print("-----------------Fim de processo-----------------")
 txt.close()
-
+browser.close()
 
 '''
 element1 = browser.find_element_by_id('ctl00_ContentPlaceHolder1_grdBPS_ctl03_imgExcluir')
