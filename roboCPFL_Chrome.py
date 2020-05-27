@@ -5,13 +5,13 @@ from selenium.common.exceptions import NoSuchElementException
 from bs4 import BeautifulSoup
 import time
 import os
+import os.path
 
 # ----------- Variaveis de configuração
 path_dow = r"C:\Users\benhur.bittencourt\Envs\webscrapy\Dow" #Change default directory for downloads
 txt = open('Error.txt', 'w')
 
 # ----------- Limpa arquivo padrão caso exista na pasta
-#os.remove(r"C:\Users\benhur.bittencourt\Envs\webscrapy\Dow\gerarconta.aspx")
 
 # ----------- CONFIGURAÇÕES DO NAVEGADOR
 options = webdriver.ChromeOptions()
@@ -53,8 +53,6 @@ for buttons in soup.find_all('img'):
     id = buttons.get('id')
     element = browser.find_element_by_id(id)
     browser.execute_script("arguments[0].click();", element)
-
-    txt.write('Download Erro! Unidade: ' + "\n")
 
     # ----------- seleção de instalação
     print("-----------------seleção de instalação-----------------")
@@ -101,11 +99,16 @@ for buttons in soup.find_all('img'):
                     try:
                         # ----------- Download
                         print("-----------------Download-----------------")
+
+                        if os.path.exists((path_dow + "/gerarconta.aspx")): # remove arquivo caso tenha ficado de outro download
+                            os.remove((path_dow + "/gerarconta.aspx"))
+
                         idunidade = browser.find_element_by_id('ctl00_ContentPlaceHolder1_dadoscliente1_lblINSTALACAO').text # busca unidade consumidora da empresa (id)
                         element = browser.find_element_by_id('ctl00_ContentPlaceHolder1_btnGERARFATURA') # botão download fatura
+
                         browser.execute_script("arguments[0].click();", element)
                         time.sleep(20)
-                        os.rename((path_dow + "/gerarcont.aspx"),(path_dow + "/" + str(month) + str(year) + "_" + idunidade + ".pdf")) # renomeia arquivo
+                        os.rename((path_dow + "/gerarconta.aspx"),(path_dow + "/" + str(month) + str(year) + "_" + idunidade + ".pdf")) # renomeia arquivo
                     except:
                         txt.write('Download Erro! Unidade: ' + unidade + "\n")
                         print("**Erro download**")
