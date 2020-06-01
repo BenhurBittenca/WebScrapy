@@ -71,8 +71,12 @@ for buttons in soup.find_all('img'):
 
             # ----------- seleção da segunda via
             print("-----------------seleção de 2º via-----------------")
+            mes_referencia = browser.find_element_by_id('ctl00_ContentPlaceHolder1_lblMESREFERENCIA').text # mÊs de referencia para montar descrição do arquivo
+            month = mes_referencia[0:2]
+            year = mes_referencia[5:7]
             element3 = browser.find_element_by_xpath('//a[@href="consultadebito/consultadebito.aspx"]') # botão 2º via
             browser.execute_script("arguments[0].click();", element3)
+
 
             # ----------- seleção de fatura
             print("-----------------seleção de fatura-----------------")
@@ -85,16 +89,6 @@ for buttons in soup.find_all('img'):
                     id_fatura = buttons_fatura.get('id')
                     element = browser.find_element_by_id(id_fatura)
                     browser.execute_script("arguments[0].click();", element)
-
-                    month = ''
-                    year  = ''
-                    for mes_referencia in soup_fatura.find_all('span'):
-                        print("-----------------mês de referencia-----------------")
-                        id_mesref = mes_referencia.get('id')
-                        dtvencimento = browser.find_element_by_id(id_mesref).text # busca pelo mês de referencia atráves do vencimento da linha da grade
-                        month = dtvencimento[3:5]
-                        year = dtvencimento[6:8]
-                        break # sai do laço, faz download de uma única fatura (último mês)
 
                     try:
                         # ----------- Download
