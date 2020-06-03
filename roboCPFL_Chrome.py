@@ -50,6 +50,13 @@ soup = BeautifulSoup(html, "html.parser")
 
 for buttons in soup.find_all('img'):
 
+    cont = 0
+    for nomeempresa in soup.find_all('span'):
+        cont = (cont + 1)
+        if cont == 9:
+            print(nomeempresa)
+            break
+
     id = buttons.get('id')
     element = browser.find_element_by_id(id)
     browser.execute_script("arguments[0].click();", element)
