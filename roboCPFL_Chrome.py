@@ -10,8 +10,7 @@ import os.path
 # ----------- Variaveis de configuração
 path_dow = r"C:\Users\benhur.bittencourt\Envs\webscrapy\Dow" #Change default directory for downloads
 txt = open('Error.txt', 'w')
-
-# ----------- Limpa arquivo padrão caso exista na pasta
+cnpj_inicial = "04630765000670"
 
 # ----------- CONFIGURAÇÕES DO NAVEGADOR
 options = webdriver.ChromeOptions()
@@ -48,93 +47,103 @@ clientes = browser.find_element_by_id('ctl00_ContentPlaceHolder1_grdBPS')
 html = clientes.get_attribute("innerHTML")
 soup = BeautifulSoup(html, "html.parser")
 
+cont = 0
+cnpjs = []
+for cnpjempresa in soup.find_all('span'):
+    cont = (cont + 1)
+    if cont == 9:
+        cont = 0
+        cnpj = str(cnpjempresa)
+        cnpj = cnpj[27:41]
+        cnpjs.append(cnpj)
+
+rows = -1
 for buttons in soup.find_all('img'):
 
+    rows = (rows + 1)
     cont = 0
-    for nomeempresa in soup.find_all('span'):
-        cont = (cont + 1)
-        if cont == 9:
-            print(nomeempresa)
-            break
 
-    id = buttons.get('id')
-    element = browser.find_element_by_id(id)
-    browser.execute_script("arguments[0].click();", element)
+    if (cnpj_inicial == cnpjs[rows] or cnpj_inicial == ""):
+        cnpj_inicial = ""
 
-    # ----------- seleção de instalação
-    print("-----------------seleção de instalação-----------------")
-    if len(browser.find_elements_by_id('ctl00_ContentPlaceHolder1_grdUcs')) > 0:
-        unidade = browser.find_element_by_id('ctl00_ContentPlaceHolder1_lblNOME').text
-        print("Unidade: " + unidade)
+        id = buttons.get('id')
+        element = browser.find_element_by_id(id)
+        browser.execute_script("arguments[0].click();", element)
 
-        instalacao = browser.find_element_by_id('ctl00_ContentPlaceHolder1_grdUcs')
-        html = instalacao.get_attribute("innerHTML")
-        soup_intalacao = BeautifulSoup(html, "html.parser")
+        # ----------- seleção de instalação
+        print("-----------------seleção de instalação-----------------")
+        if len(browser.find_elements_by_id('ctl00_ContentPlaceHolder1_grdUcs')) > 0:
+            unidade = browser.find_element_by_id('ctl00_ContentPlaceHolder1_lblNOME').text
+            print("Unidade: " + unidade)
 
-        for buttons_instalacao in soup_intalacao.find_all('img'):
-            id_instalacao = buttons_instalacao.get('id')
-            element = browser.find_element_by_id(id_instalacao)
-            browser.execute_script("arguments[0].click();", element)
+            instalacao = browser.find_element_by_id('ctl00_ContentPlaceHolder1_grdUcs')
+            html = instalacao.get_attribute("innerHTML")
+            soup_intalacao = BeautifulSoup(html, "html.parser")
 
-            # ----------- seleção da segunda via
-            print("-----------------seleção de 2º via-----------------")
-            mes_referencia = browser.find_element_by_id('ctl00_ContentPlaceHolder1_lblMESREFERENCIA').text # mÊs de referencia para montar descrição do arquivo
-            month = mes_referencia[0:2]
-            year = mes_referencia[5:7]
-            element3 = browser.find_element_by_xpath('//a[@href="consultadebito/consultadebito.aspx"]') # botão 2º via
-            browser.execute_script("arguments[0].click();", element3)
+            for buttons_instalacao in soup_intalacao.find_all('img'):
+                id_instalacao = buttons_instalacao.get('id')
+                element = browser.find_element_by_id(id_instalacao)
+                browser.execute_script("arguments[0].click();", element)
+
+                # ----------- seleção da segunda via
+                print("-----------------seleção de 2º via-----------------")
+                mes_referencia = browser.find_element_by_id('ctl00_ContentPlaceHolder1_lblMESREFERENCIA').text # mÊs de referencia para montar descrição do arquivo
+                month = mes_referencia[0:2]
+                year = mes_referencia[5:7]
+                element3 = browser.find_element_by_xpath('//a[@href="consultadebito/consultadebito.aspx"]') # botão 2º via
+                browser.execute_script("arguments[0].click();", element3)
 
 
-            # ----------- seleção de fatura
-            print("-----------------seleção de fatura-----------------")
-            if len(browser.find_elements_by_id('ctl00_ContentPlaceHolder1_grdFaturas')) > 0:
-                fatura = browser.find_element_by_id('ctl00_ContentPlaceHolder1_grdFaturas') # grade de faturas
-                html = fatura.get_attribute("innerHTML")
-                soup_fatura = BeautifulSoup(html, "html.parser")
+                # ----------- seleção de fatura
+                print("-----------------seleção de fatura-----------------")
+                if len(browser.find_elements_by_id('ctl00_ContentPlaceHolder1_grdFaturas')) > 0:
+                    fatura = browser.find_element_by_id('ctl00_ContentPlaceHolder1_grdFaturas') # grade de faturas
+                    html = fatura.get_attribute("innerHTML")
+                    soup_fatura = BeautifulSoup(html, "html.parser")
 
-                for buttons_fatura in soup_fatura.find_all('input'):
-                    id_fatura = buttons_fatura.get('id')
-                    element = browser.find_element_by_id(id_fatura)
-                    browser.execute_script("arguments[0].click();", element)
-
-                    try:
-                        # ----------- Download
-                        print("-----------------Download-----------------")
-
-                        if os.path.exists((path_dow + "/gerarconta.aspx")): # remove arquivo caso tenha ficado de outro download
-                            os.remove((path_dow + "/gerarconta.aspx"))
-
-                        idunidade = browser.find_element_by_id('ctl00_ContentPlaceHolder1_dadoscliente1_lblINSTALACAO').text # busca unidade consumidora da empresa (id)
-                        element = browser.find_element_by_id('ctl00_ContentPlaceHolder1_btnGERARFATURA') # botão download fatura
-
+                    for buttons_fatura in soup_fatura.find_all('input'):
+                        id_fatura = buttons_fatura.get('id')
+                        element = browser.find_element_by_id(id_fatura)
                         browser.execute_script("arguments[0].click();", element)
-                        time.sleep(20)
-                        os.rename((path_dow + "/gerarconta.aspx"),(path_dow + "/" + str(month) + str(year) + "_" + idunidade + ".pdf")) # renomeia arquivo
-                    except:
-                        txt.write('Download Erro! Unidade: ' + unidade + "\n")
-                        print("**Erro download**")
 
-                    browser.switch_to.window (browser.window_handles [1]) # seleciona aba do download
-                    time.sleep(5)
-                    browser.close() # fecha aba download
-                    browser.switch_to.window (browser.window_handles [0]) #seleciona aba principal
-                    break # sai do laço, faz download de uma única fatura (último mês)
-            else:
-                print("Sem faturas para download")
+                        try:
+                            # ----------- Download
+                            print("-----------------Download-----------------")
 
-            # ----------- retorna para a seleção de instalação
-            print("-----------------Retorna seleção de instalação-----------------")
-            element = browser.find_element_by_id('ctl00_ContentPlaceHolder1_barranavegacao1_btnSELECIONAUC') # seleciona outro cliente
+                            if os.path.exists((path_dow + "/gerarconta.aspx")): # remove arquivo caso tenha ficado de outro download
+                                os.remove((path_dow + "/gerarconta.aspx"))
+
+                            idunidade = browser.find_element_by_id('ctl00_ContentPlaceHolder1_dadoscliente1_lblINSTALACAO').text # busca unidade consumidora da empresa (id)
+                            element = browser.find_element_by_id('ctl00_ContentPlaceHolder1_btnGERARFATURA') # botão download fatura
+
+                            browser.execute_script("arguments[0].click();", element)
+                            time.sleep(20)
+                            os.rename((path_dow + "/gerarconta.aspx"),(path_dow + "/" + str(month) + str(year) + "_" + idunidade + ".pdf")) # renomeia arquivo
+                        except:
+                            txt.write('Download Erro! Unidade: ' + unidade + "\n")
+                            print("**Erro download**")
+
+                        browser.switch_to.window (browser.window_handles [1]) # seleciona aba do download
+                        time.sleep(5)
+                        browser.close() # fecha aba download
+                        browser.switch_to.window (browser.window_handles [0]) #seleciona aba principal
+                        break # sai do laço, faz download de uma única fatura (último mês)
+                else:
+                    print("Sem faturas para download")
+
+                # ----------- retorna para a seleção de instalação
+                print("-----------------Retorna seleção de instalação-----------------")
+                element = browser.find_element_by_id('ctl00_ContentPlaceHolder1_barranavegacao1_btnSELECIONAUC') # seleciona outro cliente
+                browser.execute_script("arguments[0].click();", element)
+
+            # ----------- retorna para a seleção de clientes
+            print("-----------------Retorna seleção de clientes-----------------")
+            element = browser.find_element_by_id('ctl00_ContentPlaceHolder1_btnSELECIONAPN')
             browser.execute_script("arguments[0].click();", element)
-
-        # ----------- retorna para a seleção de clientes
-        print("-----------------Retorna seleção de clientes-----------------")
-        element = browser.find_element_by_id('ctl00_ContentPlaceHolder1_btnSELECIONAPN')
-        browser.execute_script("arguments[0].click();", element)
-    else:
-        print("Cliente sem instalação")
-        element = browser.find_element_by_id('ctl00_ContentPlaceHolder1_btnOK') # botão selecionar outro cliente
-        browser.execute_script("arguments[0].click();", element)
+        else:
+            print("Cliente sem instalação")
+            element = browser.find_element_by_id('ctl00_ContentPlaceHolder1_btnOK') # botão selecionar outro cliente
+            browser.execute_script("arguments[0].click();", element)
 
 print("-----------------Fim de processo-----------------")
 txt.close()
