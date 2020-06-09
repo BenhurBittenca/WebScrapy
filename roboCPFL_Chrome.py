@@ -126,9 +126,12 @@ for buttons in soup.find_all('img'):
                             if (ambiente == 0): #cativo
                                 print("Ambiente Cativo..")
                                 shutil.move((path_dow + "/gerarconta.aspx"),(path_dow + "/Cativo/" + str(month) + str(year) + "_" + idunidade + ".pdf"))
-                            else: # livre
+                            elif (ambiente == 1): # livre
                                 print("Ambiente Livre..")
                                 shutil.move((path_dow + "/gerarconta.aspx"),(path_dow + "/Livre/" + str(month) + str(year) + "_" + idunidade + ".pdf"))
+                            else: # não localizado, cliente não encontra-se no banco de dados
+                                print("Novo cliente..")
+                                shutil.move((path_dow + "/gerarconta.aspx"),(path_dow + "/Outros/" + str(month) + str(year) + "_" + idunidade + ".pdf"))
 
                             #os.rename((path_dow + "/gerarconta.aspx"),(path_dow + "/" + str(month) + str(year) + "_" + idunidade + ".pdf")) # renomeia arquivo
                         except:
