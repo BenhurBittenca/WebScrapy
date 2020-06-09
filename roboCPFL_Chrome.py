@@ -3,14 +3,17 @@ from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.options import Options
 from selenium.common.exceptions import NoSuchElementException
 from bs4 import BeautifulSoup
+from organizafatura import ambienteUnidade
+
 import time
+import shutil
 import os
 import os.path
 
 # ----------- Variaveis de configuração
 path_dow = r"C:\Users\benhur.bittencourt\Envs\webscrapy\Dow" #Change default directory for downloads
 txt = open('Error.txt', 'w')
-cnpj_inicial = "04630765000670"
+cnpj_inicial = ""
 
 # ----------- CONFIGURAÇÕES DO NAVEGADOR
 options = webdriver.ChromeOptions()
@@ -118,7 +121,16 @@ for buttons in soup.find_all('img'):
 
                             browser.execute_script("arguments[0].click();", element)
                             time.sleep(20)
-                            os.rename((path_dow + "/gerarconta.aspx"),(path_dow + "/" + str(month) + str(year) + "_" + idunidade + ".pdf")) # renomeia arquivo
+
+                            ambiente = (ambienteUnidade(idunidade)) # busca pelo ambiente da unidade
+                            if (ambiente == 0): #cativo
+                                print("Ambiente Cativo..")
+                                shutil.move((path_dow + "/gerarconta.aspx"),(path_dow + "/Cativo/" + str(month) + str(year) + "_" + idunidade + ".pdf"))
+                            else: # livre
+                                print("Ambiente Livre..")
+                                shutil.move((path_dow + "/gerarconta.aspx"),(path_dow + "/Livre/" + str(month) + str(year) + "_" + idunidade + ".pdf"))
+
+                            #os.rename((path_dow + "/gerarconta.aspx"),(path_dow + "/" + str(month) + str(year) + "_" + idunidade + ".pdf")) # renomeia arquivo
                         except:
                             txt.write('Download Erro! Unidade: ' + unidade + "\n")
                             print("**Erro download**")
