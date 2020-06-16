@@ -14,6 +14,7 @@ import os.path
 path_dow = r"C:\Users\benhur.bittencourt\Envs\webscrapy\Dow" #Change default directory for downloads
 txt = open('Error.txt', 'w')
 cnpj_inicial = ""
+ignorar = ['87556650001330']
 
 # ----------- CONFIGURAÇÕES DO NAVEGADOR
 options = webdriver.ChromeOptions()
@@ -66,7 +67,7 @@ for buttons in soup.find_all('img'):
     rows = (rows + 1)
     cont = 0
 
-    if (cnpj_inicial == cnpjs[rows] or cnpj_inicial == ""):
+    if ((cnpj_inicial == cnpjs[rows] or cnpj_inicial == "") and (cnpjs[rows] != '87556650001330')): # ignora o cnpj da bertolini S.A 87556650001330
         cnpj_inicial = ""
 
         id = buttons.get('id')
