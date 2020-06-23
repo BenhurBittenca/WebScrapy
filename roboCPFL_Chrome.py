@@ -3,7 +3,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.options import Options
 from selenium.common.exceptions import NoSuchElementException
 from bs4 import BeautifulSoup
-from organizafatura import ambienteUnidade
+from organizafatura import ambienteUnidade, InsereUnidade, ExisteFatura
 
 import time
 import shutil
@@ -92,8 +92,10 @@ for buttons in soup.find_all('img'):
                 # ----------- seleção da segunda via
                 print("-----------------seleção de 2º via-----------------")
                 mes_referencia = browser.find_element_by_id('ctl00_ContentPlaceHolder1_lblMESREFERENCIA').text # mÊs de referencia para montar descrição do arquivo
-                month = mes_referencia[0:2]
-                year = mes_referencia[5:7]
+                month = mes_referencia[0:2] # ex 06
+                year = mes_referencia[5:7] # ex 20
+                year2 = mes_referencia[3:7] # ex: 2020
+
                 element3 = browser.find_element_by_xpath('//a[@href="consultadebito/consultadebito.aspx"]') # botão 2º via
                 browser.execute_script("arguments[0].click();", element3)
 
@@ -110,16 +112,17 @@ for buttons in soup.find_all('img'):
                         element = browser.find_element_by_id(id_fatura)
                         browser.execute_script("arguments[0].click();", element)
 
-                        try:
+                        #try:
                             # ----------- Download
-                            print("-----------------Download-----------------")
+                        print("-----------------Download-----------------")
 
-                            if os.path.exists((path_dow + "/gerarconta.aspx")): # remove arquivo caso tenha ficado de outro download
-                                os.remove((path_dow + "/gerarconta.aspx"))
+                        if os.path.exists((path_dow + "/gerarconta.aspx")): # remove arquivo caso tenha ficado de outro download
+                            os.remove((path_dow + "/gerarconta.aspx"))
 
-                            idunidade = browser.find_element_by_id('ctl00_ContentPlaceHolder1_dadoscliente1_lblINSTALACAO').text # busca unidade consumidora da empresa (id)
+                        idunidade = browser.find_element_by_id('ctl00_ContentPlaceHolder1_dadoscliente1_lblINSTALACAO').text # busca unidade consumidora da empresa (id)
+
+                        if (ExisteFatura(idunidade,month,year2) == 0): # verifica se já não foi realizado download da fatura
                             element = browser.find_element_by_id('ctl00_ContentPlaceHolder1_btnGERARFATURA') # botão download fatura
-
                             browser.execute_script("arguments[0].click();", element)
                             time.sleep(20)
 
@@ -134,15 +137,18 @@ for buttons in soup.find_all('img'):
                                 print("Novo cliente..")
                                 shutil.move((path_dow + "/gerarconta.aspx"),(path_dow + "/Outros/" + str(month) + str(year) + "_" + idunidade + ".pdf"))
 
-                            #os.rename((path_dow + "/gerarconta.aspx"),(path_dow + "/" + str(month) + str(year) + "_" + idunidade + ".pdf")) # renomeia arquivo
-                        except:
-                            txt.write('Download Erro! Unidade: ' + unidade + "\n")
-                            print("**Erro download**")
+                            teste = (InsereUnidade(idunidade,month,year2)) # insere registro na tabela fat_rge para consulta de API
 
-                        browser.switch_to.window (browser.window_handles [1]) # seleciona aba do download
-                        time.sleep(5)
-                        browser.close() # fecha aba download
-                        browser.switch_to.window (browser.window_handles [0]) #seleciona aba principal
+                            browser.switch_to.window (browser.window_handles [1]) # seleciona aba do download
+                            time.sleep(5)
+                            browser.close() # fecha aba download
+                            browser.switch_to.window (browser.window_handles [0]) #seleciona aba principal
+                        else:
+                            print("Download já realizado!")
+                        #except:
+                            #txt.write('Download Erro! Unidade: ' + unidade + "\n")
+                            #print("**Erro download**")
+
                         break # sai do laço, faz download de uma única fatura (último mês)
                 else:
                     print("Sem faturas para download")
