@@ -9,12 +9,19 @@ import time
 import shutil
 import os
 import os.path
+from datetime import datetime
 
 # ----------- Variaveis de configuração
 path_dow = r"C:\Users\benhur.bittencourt\Envs\webscrapy\Dow" #Change default directory for downloads
+path_dow2 = r"C:\Users\benhur.bittencourt\Documents\Glauber\Temp" #directory alternative
 txt = open('Error.txt', 'w')
 cnpj_inicial = ""
 ignorar = ['87556650001330']
+
+datahora = ((datetime.now().strftime('%d-%m-%Y')) + "-" + (datetime.now().strftime('%H%M')))
+os.makedirs(path_dow2 + "/Livre/" + datahora) # cria diretório com caminho alternativo
+os.makedirs(path_dow2 + "/Cativo/" + datahora) # cria diretório com caminho alternativo
+os.makedirs(path_dow2 + "/Outros/" + datahora) # cria diretório com caminho alternativo
 
 # ----------- CONFIGURAÇÕES DO NAVEGADOR
 options = webdriver.ChromeOptions()
@@ -130,14 +137,17 @@ for buttons in soup.find_all('img'):
                             if (ambiente == 0): #cativo
                                 print("Ambiente Cativo..")
                                 shutil.move((path_dow + "/gerarconta.aspx"),(path_dow + "/Cativo/" + str(month) + str(year) + "_" + idunidade + ".pdf"))
+                                shutil.copy((path_dow + "/Cativo/" + str(month) + str(year) + "_" + idunidade + ".pdf"), (path_dow2 + "/Cativo/" + datahora)) # move arquivo para outro diretório
                             elif (ambiente == 1): # livre
                                 print("Ambiente Livre..")
                                 shutil.move((path_dow + "/gerarconta.aspx"),(path_dow + "/Livre/" + str(month) + str(year) + "_" + idunidade + ".pdf"))
+                                shutil.copy((path_dow + "/Livre/" + str(month) + str(year) + "_" + idunidade + ".pdf"), (path_dow2 + "/Livre/" + datahora))
                             else: # não localizado, cliente não encontra-se no banco de dados
                                 print("Novo cliente..")
                                 shutil.move((path_dow + "/gerarconta.aspx"),(path_dow + "/Outros/" + str(month) + str(year) + "_" + idunidade + ".pdf"))
+                                shutil.copy((path_dow + "/Outros/" + str(month) + str(year) + "_" + idunidade + ".pdf"), (path_dow2 + "/Outros/" + datahora))
 
-                            teste = (InsereUnidade(idunidade,month,year2)) # insere registro na tabela fat_rge para consulta de API
+                            insere = (InsereUnidade(idunidade,month,year2)) # insere registro na tabela fat_rge para consulta de API
 
                             browser.switch_to.window (browser.window_handles [1]) # seleciona aba do download
                             time.sleep(5)
