@@ -12,11 +12,10 @@ import os.path
 from datetime import datetime
 
 # ----------- Variaveis de configuração
-path_dow = r"C:\Users\benhur.bittencourt\Envs\webscrapy\Dow" #Change default directory for downloads
-path_dow2 = r"C:\Users\benhur.bittencourt\Documents\Glauber\Temp" #directory alternative
+path_dow = r"C:\WebScrapy\Dow" #Change default directory for downloads
+path_dow2 = r"\\server.ludfor.com.br\Técnico\Controle de Faturas Mercado Livre\Faturas_RGE" #directory alternative
 txt = open('Error.txt', 'w')
-cnpj_inicial = ""
-ignorar = ['87556650001330']
+cnpj_inicial = "02162560000178"
 
 datahora = ((datetime.now().strftime('%d-%m-%Y')) + "-" + (datetime.now().strftime('%H%M')))
 os.makedirs(path_dow2 + "/Livre/" + datahora) # cria diretório com caminho alternativo
@@ -119,45 +118,45 @@ for buttons in soup.find_all('img'):
                         element = browser.find_element_by_id(id_fatura)
                         browser.execute_script("arguments[0].click();", element)
 
-                        #try:
+                        try:
                             # ----------- Download
-                        print("-----------------Download-----------------")
+                            print("-----------------Download-----------------")
 
-                        if os.path.exists((path_dow + "/gerarconta.aspx")): # remove arquivo caso tenha ficado de outro download
-                            os.remove((path_dow + "/gerarconta.aspx"))
+                            if os.path.exists((path_dow + "/gerarconta.aspx")): # remove arquivo caso tenha ficado de outro download
+                                os.remove((path_dow + "/gerarconta.aspx"))
 
-                        idunidade = browser.find_element_by_id('ctl00_ContentPlaceHolder1_dadoscliente1_lblINSTALACAO').text # busca unidade consumidora da empresa (id)
+                            idunidade = browser.find_element_by_id('ctl00_ContentPlaceHolder1_dadoscliente1_lblINSTALACAO').text # busca unidade consumidora da empresa (id)
 
-                        if (ExisteFatura(idunidade,month,year2) == 0): # verifica se já não foi realizado download da fatura
-                            element = browser.find_element_by_id('ctl00_ContentPlaceHolder1_btnGERARFATURA') # botão download fatura
-                            browser.execute_script("arguments[0].click();", element)
-                            time.sleep(20)
+                            if (ExisteFatura(idunidade,month,year2) == 0): # verifica se já não foi realizado download da fatura
+                                element = browser.find_element_by_id('ctl00_ContentPlaceHolder1_btnGERARFATURA') # botão download fatura
+                                browser.execute_script("arguments[0].click();", element)
+                                time.sleep(20)
 
-                            ambiente = (ambienteUnidade(idunidade)) # busca pelo ambiente da unidade
-                            if (ambiente == 0): #cativo
-                                print("Ambiente Cativo..")
-                                shutil.move((path_dow + "/gerarconta.aspx"),(path_dow + "/Cativo/" + str(month) + str(year) + "_" + idunidade + ".pdf"))
-                                shutil.copy((path_dow + "/Cativo/" + str(month) + str(year) + "_" + idunidade + ".pdf"), (path_dow2 + "/Cativo/" + datahora)) # move arquivo para outro diretório
-                            elif (ambiente == 1): # livre
-                                print("Ambiente Livre..")
-                                shutil.move((path_dow + "/gerarconta.aspx"),(path_dow + "/Livre/" + str(month) + str(year) + "_" + idunidade + ".pdf"))
-                                shutil.copy((path_dow + "/Livre/" + str(month) + str(year) + "_" + idunidade + ".pdf"), (path_dow2 + "/Livre/" + datahora))
-                            else: # não localizado, cliente não encontra-se no banco de dados
-                                print("Novo cliente..")
-                                shutil.move((path_dow + "/gerarconta.aspx"),(path_dow + "/Outros/" + str(month) + str(year) + "_" + idunidade + ".pdf"))
-                                shutil.copy((path_dow + "/Outros/" + str(month) + str(year) + "_" + idunidade + ".pdf"), (path_dow2 + "/Outros/" + datahora))
+                                ambiente = (ambienteUnidade(idunidade)) # busca pelo ambiente da unidade
+                                if (ambiente == 0): #cativo
+                                    print("Ambiente Cativo..")
+                                    shutil.move((path_dow + "/gerarconta.aspx"),(path_dow + "/Cativo/" + str(month) + str(year) + "_" + idunidade + ".pdf"))
+                                    shutil.copy((path_dow + "/Cativo/" + str(month) + str(year) + "_" + idunidade + ".pdf"), (path_dow2 + "/Cativo/" + datahora)) # move arquivo para outro diretório
+                                elif (ambiente == 1): # livre
+                                    print("Ambiente Livre..")
+                                    shutil.move((path_dow + "/gerarconta.aspx"),(path_dow + "/Livre/" + str(month) + str(year) + "_" + idunidade + ".pdf"))
+                                    shutil.copy((path_dow + "/Livre/" + str(month) + str(year) + "_" + idunidade + ".pdf"), (path_dow2 + "/Livre/" + datahora))
+                                else: # não localizado, cliente não encontra-se no banco de dados
+                                    print("Novo cliente..")
+                                    shutil.move((path_dow + "/gerarconta.aspx"),(path_dow + "/Outros/" + str(month) + str(year) + "_" + idunidade + ".pdf"))
+                                    shutil.copy((path_dow + "/Outros/" + str(month) + str(year) + "_" + idunidade + ".pdf"), (path_dow2 + "/Outros/" + datahora))
 
-                            insere = (InsereUnidade(idunidade,month,year2)) # insere registro na tabela fat_rge para consulta de API
+                                insere = (InsereUnidade(idunidade,month,year2)) # insere registro na tabela fat_rge para consulta de API
 
-                            browser.switch_to.window (browser.window_handles [1]) # seleciona aba do download
-                            time.sleep(5)
-                            browser.close() # fecha aba download
-                            browser.switch_to.window (browser.window_handles [0]) #seleciona aba principal
-                        else:
-                            print("Download já realizado!")
-                        #except:
-                            #txt.write('Download Erro! Unidade: ' + unidade + "\n")
-                            #print("**Erro download**")
+                                browser.switch_to.window (browser.window_handles [1]) # seleciona aba do download
+                                time.sleep(5)
+                                browser.close() # fecha aba download
+                                browser.switch_to.window (browser.window_handles [0]) #seleciona aba principal
+                            else:
+                                print("Download já realizado!")
+                        except:
+                            txt.write('Download Erro! Unidade: ' + unidade + "\n")
+                            print("**Erro download**")
 
                         break # sai do laço, faz download de uma única fatura (último mês)
                 else:
