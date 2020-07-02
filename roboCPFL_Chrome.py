@@ -11,21 +11,36 @@ import os
 import os.path
 from datetime import datetime
 
-# ----------- Variaveis de configuração
-path_dow = r"C:\WebScrapy\Dow" #Change default directory for downloads
-path_dow2 = r"\\server.ludfor.com.br\Técnico\Controle de Faturas Mercado Livre\Faturas_RGE" #directory alternative
-txt = open('Error.txt', 'w')
-cnpj_inicial = "02162560000178"
 
-datahora = ((datetime.now().strftime('%d-%m-%Y')) + "-" + (datetime.now().strftime('%H%M')))
-os.makedirs(path_dow2 + "/Livre/" + datahora) # cria diretório com caminho alternativo
-os.makedirs(path_dow2 + "/Cativo/" + datahora) # cria diretório com caminho alternativo
-os.makedirs(path_dow2 + "/Outros/" + datahora) # cria diretório com caminho alternativo
+try:
+    # ----------- Variaveis de configuração
+    path_dow = r"C:\Users\benhur.bittencourt\Envs\webscrapy\Dow" #Change default directory for downloads
+    path_dow2 = r"C:\Users\benhur.bittencourt\Documents\Glauber\Temp" #directory alternative
+    log_status = r"C:\Users\benhur.bittencourt\Envs\WebScrapy\status.txt"
+    log_cnpj = r"C:\Users\benhur.bittencourt\Envs\WebScrapy\ult_cnpj.txt"
+    cnpj_inicial = ""
 
-# ----------- CONFIGURAÇÕES DO NAVEGADOR
-options = webdriver.ChromeOptions()
-options.add_argument("--start-maximized")
-options.add_experimental_option(
+    # ----------- Verifica status do ultimo processo
+    txt_status = open(log_status, 'r')
+    status = txt_status.readline()
+    if status == "erro":
+        txt_cnpj = open(log_cnpj, 'r')
+        cnpj_inicial = txt_cnpj.readline()
+
+    txt_status = open(log_status, 'w')
+    txt_status.write('em execução')
+    txt_status.close()
+
+    #----------- Diretórios
+    datahora = ((datetime.now().strftime('%d-%m-%Y')) + "-" + (datetime.now().strftime('%H%M')))
+    os.makedirs(path_dow2 + "/Livre/" + datahora) # cria diretório com caminho alternativo
+    os.makedirs(path_dow2 + "/Cativo/" + datahora) # cria diretório com caminho alternativo
+    os.makedirs(path_dow2 + "/Outros/" + datahora) # cria diretório com caminho alternativo
+
+    # ----------- CONFIGURAÇÕES DO NAVEGADOR
+    options = webdriver.ChromeOptions()
+    options.add_argument("--start-maximized")
+    options.add_experimental_option(
     'prefs',
         {
             "download.default_directory": path_dow,
@@ -35,90 +50,93 @@ options.add_experimental_option(
         }
     )
 
-browser = webdriver.Chrome(ChromeDriverManager().install(),chrome_options=options)
-browser.get("https://www.cpflempresas.com.br/")
+    browser = webdriver.Chrome(ChromeDriverManager().install(),chrome_options=options)
+    browser.get("https://www.cpflempresas.com.br/")
 
-username = '010.295.140-38'
-password = 'Lud1995'
+    username = '010.295.140-38'
+    password = 'Lud1995'
 
-# ----------- input usuário e senha
-print("-----------------Carregando formulário-----------------")
-browser.execute_script(f'var element = document.getElementById("ctl00_ContentPlaceHolder1_loginmenu1_txtUSUARIO"); element.value = "{username}";')
-browser.execute_script(f'var element = document.getElementById("ctl00_ContentPlaceHolder1_loginmenu1_txtSENHA"); element.value = "{password}";')
+    # ----------- input usuário e senha
+    print("-----------------Carregando formulário-----------------")
+    browser.execute_script(f'var element = document.getElementById("ctl00_ContentPlaceHolder1_loginmenu1_txtUSUARIO"); element.value = "{username}";')
+    browser.execute_script(f'var element = document.getElementById("ctl00_ContentPlaceHolder1_loginmenu1_txtSENHA"); element.value = "{password}";')
 
-# ----------- Logar na pagina
-print("-----------------Submit-----------------")
-element = browser.find_element_by_id('ctl00_ContentPlaceHolder1_loginmenu1_btnLOGIN')
-browser.execute_script("arguments[0].click();", element)
+    # ----------- Logar na pagina
+    print("-----------------Submit-----------------")
+    element = browser.find_element_by_id('ctl00_ContentPlaceHolder1_loginmenu1_btnLOGIN')
+    browser.execute_script("arguments[0].click();", element)
 
-# ----------- seleção de cliente
-print("-----------------seleção de cliente-----------------")
-clientes = browser.find_element_by_id('ctl00_ContentPlaceHolder1_grdBPS')
-html = clientes.get_attribute("innerHTML")
-soup = BeautifulSoup(html, "html.parser")
+    # ----------- seleção de cliente
+    print("-----------------seleção de cliente-----------------")
+    clientes = browser.find_element_by_id('ctl00_ContentPlaceHolder1_grdBPS')
+    html = clientes.get_attribute("innerHTML")
+    soup = BeautifulSoup(html, "html.parser")
 
-cont = 0
-cnpjs = []
-for cnpjempresa in soup.find_all('span'):
-    cont = (cont + 1)
-    if cont == 9:
-        cont = 0
-        cnpj = str(cnpjempresa)
-        cnpj = cnpj[27:41]
-        cnpjs.append(cnpj)
 
-rows = -1
-for buttons in soup.find_all('img'):
-
-    rows = (rows + 1)
     cont = 0
+    cnpjs = []
+    for cnpjempresa in soup.find_all('span'):
+        cont = (cont + 1)
+        if cont == 9:
+            cont = 0
+            cnpj = str(cnpjempresa)
+            cnpj = cnpj[27:41]
+            cnpjs.append(cnpj)
 
-    if ((cnpj_inicial == cnpjs[rows] or cnpj_inicial == "") and (cnpjs[rows] != '87556650001330')): # ignora o cnpj da bertolini S.A 87556650001330
-        cnpj_inicial = ""
+    rows = -1
+    for buttons in soup.find_all('img'):
 
-        id = buttons.get('id')
-        element = browser.find_element_by_id(id)
-        browser.execute_script("arguments[0].click();", element)
+        rows = (rows + 1)
+        cont = 0
 
-        # ----------- seleção de instalação
-        print("-----------------seleção de instalação-----------------")
-        if len(browser.find_elements_by_id('ctl00_ContentPlaceHolder1_grdUcs')) > 0:
-            unidade = browser.find_element_by_id('ctl00_ContentPlaceHolder1_lblNOME').text
-            print("Unidade: " + unidade)
+        txt_cnpj = open(log_cnpj, 'w')
+        txt_cnpj.write(cnpjs[rows])
+        txt_cnpj.close()
 
-            instalacao = browser.find_element_by_id('ctl00_ContentPlaceHolder1_grdUcs')
-            html = instalacao.get_attribute("innerHTML")
-            soup_intalacao = BeautifulSoup(html, "html.parser")
+        if ((cnpj_inicial == cnpjs[rows] or cnpj_inicial == "") and (cnpjs[rows] != '87556650001330')): # ignora o cnpj da bertolini S.A 87556650001330
+            cnpj_inicial = ""
 
-            for buttons_instalacao in soup_intalacao.find_all('img'):
-                id_instalacao = buttons_instalacao.get('id')
-                element = browser.find_element_by_id(id_instalacao)
-                browser.execute_script("arguments[0].click();", element)
+            id = buttons.get('id')
+            element = browser.find_element_by_id(id)
+            browser.execute_script("arguments[0].click();", element)
 
-                # ----------- seleção da segunda via
-                print("-----------------seleção de 2º via-----------------")
-                mes_referencia = browser.find_element_by_id('ctl00_ContentPlaceHolder1_lblMESREFERENCIA').text # mÊs de referencia para montar descrição do arquivo
-                month = mes_referencia[0:2] # ex 06
-                year = mes_referencia[5:7] # ex 20
-                year2 = mes_referencia[3:7] # ex: 2020
+            # ----------- seleção de instalação
+            print("-----------------seleção de instalação-----------------")
+            if len(browser.find_elements_by_id('ctl00_ContentPlaceHolder1_grdUcs')) > 0:
+                unidade = browser.find_element_by_id('ctl00_ContentPlaceHolder1_lblNOME').text
+                print("Unidade: " + unidade)
 
-                element3 = browser.find_element_by_xpath('//a[@href="consultadebito/consultadebito.aspx"]') # botão 2º via
-                browser.execute_script("arguments[0].click();", element3)
+                instalacao = browser.find_element_by_id('ctl00_ContentPlaceHolder1_grdUcs')
+                html = instalacao.get_attribute("innerHTML")
+                soup_intalacao = BeautifulSoup(html, "html.parser")
 
+                for buttons_instalacao in soup_intalacao.find_all('img'):
+                    id_instalacao = buttons_instalacao.get('id')
+                    element = browser.find_element_by_id(id_instalacao)
+                    browser.execute_script("arguments[0].click();", element)
 
-                # ----------- seleção de fatura
-                print("-----------------seleção de fatura-----------------")
-                if len(browser.find_elements_by_id('ctl00_ContentPlaceHolder1_grdFaturas')) > 0:
-                    fatura = browser.find_element_by_id('ctl00_ContentPlaceHolder1_grdFaturas') # grade de faturas
-                    html = fatura.get_attribute("innerHTML")
-                    soup_fatura = BeautifulSoup(html, "html.parser")
+                    # ----------- seleção da segunda via
+                    print("-----------------seleção de 2º via-----------------")
+                    mes_referencia = browser.find_element_by_id('ctl00_ContentPlaceHolder1_lblMESREFERENCIA').text # mÊs de referencia para montar descrição do arquivo
+                    month = mes_referencia[0:2] # ex 06
+                    year = mes_referencia[5:7] # ex 20
+                    year2 = mes_referencia[3:7] # ex: 2020
 
-                    for buttons_fatura in soup_fatura.find_all('input'):
-                        id_fatura = buttons_fatura.get('id')
-                        element = browser.find_element_by_id(id_fatura)
-                        browser.execute_script("arguments[0].click();", element)
+                    element3 = browser.find_element_by_xpath('//a[@href="consultadebito/consultadebito.aspx"]') # botão 2º via
+                    browser.execute_script("arguments[0].click();", element3)
 
-                        try:
+                    # ----------- seleção de fatura
+                    print("-----------------seleção de fatura-----------------")
+                    if len(browser.find_elements_by_id('ctl00_ContentPlaceHolder1_grdFaturas')) > 0:
+                        fatura = browser.find_element_by_id('ctl00_ContentPlaceHolder1_grdFaturas') # grade de faturas
+                        html = fatura.get_attribute("innerHTML")
+                        soup_fatura = BeautifulSoup(html, "html.parser")
+
+                        for buttons_fatura in soup_fatura.find_all('input'):
+                            id_fatura = buttons_fatura.get('id')
+                            element = browser.find_element_by_id(id_fatura)
+                            browser.execute_script("arguments[0].click();", element)
+
                             # ----------- Download
                             print("-----------------Download-----------------")
 
@@ -154,52 +172,33 @@ for buttons in soup.find_all('img'):
                                 browser.switch_to.window (browser.window_handles [0]) #seleciona aba principal
                             else:
                                 print("Download já realizado!")
-                        except:
-                            txt.write('Download Erro! Unidade: ' + unidade + "\n")
-                            print("**Erro download**")
 
-                        break # sai do laço, faz download de uma única fatura (último mês)
-                else:
-                    print("Sem faturas para download")
+                            break # sai do laço, faz download de uma única fatura (último mês)
+                    else:
+                        print("Sem faturas para download")
 
-                # ----------- retorna para a seleção de instalação
-                print("-----------------Retorna seleção de instalação-----------------")
-                element = browser.find_element_by_id('ctl00_ContentPlaceHolder1_barranavegacao1_btnSELECIONAUC') # seleciona outro cliente
+                    # ----------- retorna para a seleção de instalação
+                    print("-----------------Retorna seleção de instalação-----------------")
+                    element = browser.find_element_by_id('ctl00_ContentPlaceHolder1_barranavegacao1_btnSELECIONAUC') # seleciona outro cliente
+                    browser.execute_script("arguments[0].click();", element)
+
+                # ----------- retorna para a seleção de clientes
+                print("-----------------Retorna seleção de clientes-----------------")
+                element = browser.find_element_by_id('ctl00_ContentPlaceHolder1_btnSELECIONAPN')
+                browser.execute_script("arguments[0].click();", element)
+            else:
+                print("Cliente sem instalação")
+                element = browser.find_element_by_id('ctl00_ContentPlaceHolder1_btnOK') # botão selecionar outro cliente
                 browser.execute_script("arguments[0].click();", element)
 
-            # ----------- retorna para a seleção de clientes
-            print("-----------------Retorna seleção de clientes-----------------")
-            element = browser.find_element_by_id('ctl00_ContentPlaceHolder1_btnSELECIONAPN')
-            browser.execute_script("arguments[0].click();", element)
-        else:
-            print("Cliente sem instalação")
-            element = browser.find_element_by_id('ctl00_ContentPlaceHolder1_btnOK') # botão selecionar outro cliente
-            browser.execute_script("arguments[0].click();", element)
+    print("-----------------Fim de processo-----------------")
 
-print("-----------------Fim de processo-----------------")
-txt.close()
-browser.close()
-
-'''
-element1 = browser.find_element_by_id('ctl00_ContentPlaceHolder1_grdBPS_ctl03_imgExcluir')
-browser.execute_script("arguments[0].click();", element1)
-print("-----------------Seleção da cliente-----------------")
-# ----------- seleção de instalação
-element2 = browser.find_element_by_id('ctl00_ContentPlaceHolder1_grdUcs_ctl02_imgSelecionar')
-browser.execute_script("arguments[0].click();", element2)
-print("-----------------Seleção da instalação-----------------")
-# ----------- seleção da segunda via
-element3 = browser.find_element_by_xpath('//a[@href="consultadebito/consultadebito.aspx"]')
-browser.execute_script("arguments[0].click();", element3)
-print("-----------------Seleção segunda via-----------------")
-# ----------- seleção de fatura
-element4 = browser.find_element_by_id('ctl00_ContentPlaceHolder1_grdFaturas_ctl02_rbIDFAT')
-browser.execute_script("arguments[0].click();", element4)
-print("-----------------Seleção de fatuera-----------------")
-# ----------- Download
-element5 = browser.find_element_by_id('ctl00_ContentPlaceHolder1_btnGERARFATURA')
-browser.execute_script("arguments[0].click();", element5)
-print("-----------------Download-----------------")
-time.sleep(10)
-browser.quit()
-'''
+    txt_status = open(log_status, 'w')
+    txt_status.write('finalizou')
+    txt_status.close()
+    browser.close()
+except OSError as err:
+    print("*************errrrrrrror*************")
+    txt_status = open(log_status, 'w')
+    txt_status.write('erro')
+    txt_status.close()
