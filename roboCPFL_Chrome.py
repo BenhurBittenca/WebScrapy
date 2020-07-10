@@ -18,6 +18,7 @@ try:
     path_dow2 = r"C:\Users\benhur.bittencourt\Documents\Glauber\Temp" #directory alternative
     log_status = r"C:\Users\benhur.bittencourt\Envs\WebScrapy\status.txt"
     log_cnpj = r"C:\Users\benhur.bittencourt\Envs\WebScrapy\ult_cnpj.txt"
+    log = r"C:\Users\benhur.bittencourt\Envs\WebScrapy\log.txt"
     cnpj_inicial = ""
 
     # ----------- Verifica status do ultimo processo
@@ -27,6 +28,7 @@ try:
         txt_cnpj = open(log_cnpj, 'r')
         cnpj_inicial = txt_cnpj.readline()
 
+    txt_status = open(log, 'w') #cria arquivo de log
     txt_status = open(log_status, 'w')
     txt_status.write('em execução')
     txt_status.close()
@@ -132,10 +134,30 @@ try:
                         html = fatura.get_attribute("innerHTML")
                         soup_fatura = BeautifulSoup(html, "html.parser")
 
+                        # busca mes e ano referencia da grade para verificar se está correto o mes_referencia
+                        row = -1
+                        mes_referencia2 = ""
+                        element4 = browser.find_elements_by_class_name('texto14cinza')
+                        for mesref in element4:
+                            row = (row +1)
+                            if (row == 1):
+                                mes_referencia = (mesref.text)
+                                month_aux = mes_referencia[5:7] # ex 06
+                                break
+
+                        if month != month_aux:
+                            month = month_aux
+                            year = mes_referencia[0:2] # ex 20
+                            year2 = mes_referencia[0:4] # ex 2020
+                            # loga unidade que tem mes de referencia disponivel antes da fatura está pronta para download
+                            txt_status = open(log, 'w')
+                            txt_status.write(unidade)
+                            txt_status.close()
+
                         for buttons_fatura in soup_fatura.find_all('input'):
                             id_fatura = buttons_fatura.get('id')
                             element = browser.find_element_by_id(id_fatura)
-                            browser.execute_script("arguments[0].click();", element)
+                            browser.execute_script("arguments[0].click();", element) # marca o primeiro checkbox da grade
 
                             # ----------- Download
                             print("-----------------Download-----------------")
