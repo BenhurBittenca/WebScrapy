@@ -18,6 +18,7 @@ try:
     path_dow2 = r"C:\Users\benhur.bittencourt\Documents\Glauber\Temp" #directory alternative
     log_status = r"C:\Users\benhur.bittencourt\Envs\WebScrapy\status.txt"
     log_cnpj = r"C:\Users\benhur.bittencourt\Envs\WebScrapy\ult_cnpj.txt"
+    log_contador = r"C:\Users\benhur.bittencourt\Envs\WebScrapy\contador.txt"
     log = r"C:\Users\benhur.bittencourt\Envs\WebScrapy\log.txt"
     cnpj_inicial = ""
 
@@ -28,7 +29,6 @@ try:
         txt_cnpj = open(log_cnpj, 'r')
         cnpj_inicial = txt_cnpj.readline()
 
-    txt_status = open(log, 'w') #cria arquivo de log
     txt_status = open(log_status, 'w')
     txt_status.write('em execução')
     txt_status.close()
@@ -56,7 +56,7 @@ try:
     browser.get("https://www.cpflempresas.com.br/")
 
     username = '010.295.140-38'
-    password = 'Lud1995'
+    password = 'For1995'
 
     # ----------- input usuário e senha
     print("-----------------Carregando formulário-----------------")
@@ -87,9 +87,12 @@ try:
 
     rows = -1
     for buttons in soup.find_all('img'):
-
         rows = (rows + 1)
         cont = 0
+
+        txt_contador = open(log_contador, 'w')
+        txt_contador.write(format(rows) + '-' + format(len(soup.find_all('img'))))
+        txt_contador.close()
 
         txt_cnpj = open(log_cnpj, 'w')
         txt_cnpj.write(cnpjs[rows])
