@@ -12,8 +12,6 @@ import os.path
 from datetime import datetime
 
 try:
-    updatefatura(1,0) # limpa campos de referencia das unidades
-
     # ----------- Variaveis de configuração
     path_default = r"C:\Users\benhur.bittencourt\Envs\WebScrapy"
     path_dow2 = r"C:\Users\benhur.bittencourt\Documents\Glauber\Temp" #directory alternative
@@ -26,6 +24,8 @@ try:
     log = (path_default + r"\log.txt")
     cnpj_inicial = ""
 
+    if log_status == "finalizou":
+        updatefatura(1,0) # limpa campos de referencia das unidades
     #print(path_dow)
     #shutil.move((path_dow + "/teste.txt"),(path_dow + str(8) + str(2020) + "_" + "141414" + ".txt"))
     #shutil.copy((path_dow + str(8) + str(2020) + "_" + "141414" + ".txt"), path_dow2)
