@@ -27,22 +27,27 @@ def BuscaPasta(path,empresa,razao,uc,distribuidora,nome,ano,mes):
 
     return existe
 
-def updatefatura(uc,mes,ano):
+def updatefatura(uc,mes,ano,id,download):
     global conexao
 
     conn = pyodbc.connect(conexao)
     insert = conn.cursor()
 
-    sql = "UPDATE fat_rge SET pastacliente = 1 WHERE unidade_consumidora = ? and mes = ? and ano = ?"
-    val = (uc,mes,ano)
-    insert.execute(sql,val)
+    if download == 0:
+        sql = "UPDATE fat_rge SET pastacliente = 1 WHERE unidade_consumidora = ? and mes = ? and ano = ?"
+        val = (uc,mes,ano)
+    else:
+        sql = "INSERT INTO fat_rge VALUES (?, ?, ?, ?, '',1)"
+        val = (id,uc,mes,ano)
 
+    insert.execute(sql,val)
     conn.commit()
     conn.close()
 
 conn = pyodbc.connect(conexao)
 consulta = conn.cursor()
-consulta.execute(" SELECT empresa.descricao, unidade.razao_social, unidade.unidade_consumidora, distribuidora.descricao, unidade.nome"
+consulta.execute(" SELECT empresa.descricao, unidade.razao_social, unidade.unidade_consumidora, distribuidora.descricao, unidade.nome, unidade.id, "
+                 " isnull((select pastacliente from fat_rge where unidade.id = fat_rge.id_unidade and fat_rge.mes = 8 and fat_rge.ano = 2020),0)"
                  " FROM ludfor.dbo.unidade inner join empresa on unidade.id_empresa = empresa.id "
                  " inner join distribuidora on unidade.id_distribuidora = distribuidora.id where ccee_gestao = 1 and ambiente = 1 and distribuidora.descricao like '%rge%' ")
 
@@ -59,6 +64,6 @@ else:
 for row in consulta:
     existe = (BuscaPasta("//server/PUBLICO/Clientes/",row[0],row[1],row[2],row[3],row[4].strip(),ano_default,mes_default))
     if existe:
-        updatefatura(row[2],mes_default,ano_default)
+        updatefatura(row[2],mes_default,ano_default,row[5],row[6])
 
 conn.close()

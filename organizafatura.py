@@ -16,7 +16,7 @@ def verificafim(path):
     log = open(path, 'w')
 
     for row in consulta:
-        log.write(str(row[0]) + "\n")        
+        log.write(str(row[0]) + "\n")
 
     log.close()
     conn.close()
@@ -71,7 +71,7 @@ def InsereUnidade(id_unidade,mes,ano):
         break
 
     insert = conn.cursor()
-    sql = "INSERT INTO fat_rge VALUES (?, ?, ?, ?, ?)"
+    sql = "INSERT INTO fat_rge VALUES (?, ?, ?, ?, ?,0)"
     val = (id,id_unidade,mes,ano,data_atual)
     insert.execute(sql,val)
     conn.commit()
