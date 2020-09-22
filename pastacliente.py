@@ -1,12 +1,14 @@
-import pyodbc
+import psycopg2
 import os.path
 from datetime import date
 
-path = r'C:\Users\benhur.bittencourt\Envs\WebScrapy\pastacliente.txt'
-conexao = ('Driver={ODBC Driver 13 for SQL Server};'
-                      'Server=BENHURBITTENCOU;'
-                      'Database=ludfor;'
-                      'Trusted_Connection=yes;')
+########### Construct connection string
+host = "localhost"
+dbname = "ludfor"
+user = "ludfor"
+password = "Knk4xmLD"
+conexao = "host={0} user={1} dbname={2} password={3}".format(host, user, dbname, password)
+############
 
 def BuscaPasta(path,empresa,razao,uc,distribuidora,nome,ano,mes):
     # monta descrição arquivo da pasta
@@ -28,18 +30,18 @@ def BuscaPasta(path,empresa,razao,uc,distribuidora,nome,ano,mes):
     return existe
 
 def updatefatura(uc,mes,ano,id,download):
-    data_atual = str(date.today())
     global conexao
+    data_atual = str(date.today())
 
-    conn = pyodbc.connect(conexao)
+    conn = psycopg2.connect(conexao)
     insert = conn.cursor()
 
     if download == 9: # quando fatura foi baixada de forma manual e colocada na pasta do cliente
-        sql = "INSERT INTO fat_rge VALUES (?, ?, ?, ?, ?,1)"
-        val = (id,uc,mes,ano,data_atual)
+        sql = "INSERT INTO fat_rge VALUES (default, %s, %s, %s, %s, %s,1)"
+        val = (id,uc,mes,ano,data_atual,)
     else:
-        sql = "UPDATE fat_rge SET pastacliente = 1 WHERE unidade_consumidora = ? and mes = ? and ano = ?"
-        val = (uc,mes,ano)
+        sql = "UPDATE fat_rge SET pastacliente = 1 WHERE unidade_consumidora = %s and mes = %s and ano = %s"
+        val = (uc,mes,ano,)
 
     insert.execute(sql,val)
     conn.commit()
@@ -57,15 +59,14 @@ else:
     ano_default = int(data_atual[:4])
     mes_default = (mes_default-1)
 
-conn = pyodbc.connect(conexao)
+conn = psycopg2.connect(conexao)
 consulta = conn.cursor()
 sql = (" SELECT empresa.descricao, unidade.razao_social, unidade.unidade_consumidora, distribuidora.descricao, unidade.nome, unidade.id, "
-                 " isnull((select pastacliente from fat_rge where unidade.id = fat_rge.id_unidade and fat_rge.mes = ? and fat_rge.ano = ?),9)"
-                 " FROM ludfor.dbo.unidade inner join empresa on unidade.id_empresa = empresa.id "
+                 " coalesce((select pastacliente from fat_rge where unidade.id = fat_rge.id_unidade and fat_rge.mes = " + str(mes_default) + " and fat_rge.ano = " + str(ano_default) + "),9)"
+                 " FROM unidade inner join empresa on unidade.id_empresa = empresa.id "
                  " inner join distribuidora on unidade.id_distribuidora = distribuidora.id where ccee_gestao = 1 and ambiente = 1 and distribuidora.descricao like '%rge%' ")
-val = (mes_default,ano_default)
 
-consulta.execute(sql,val)
+consulta.execute(sql)
 
 for row in consulta:
     existe = (BuscaPasta("//server/PUBLICO/Clientes/",row[0],row[1],row[2],row[3],row[4].strip(),ano_default,mes_default))
