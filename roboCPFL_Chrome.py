@@ -3,7 +3,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.options import Options
 from selenium.common.exceptions import NoSuchElementException
 from bs4 import BeautifulSoup
-from organizafatura import ambienteUnidade, InsereUnidade, updatefatura, RealizaDow, verificafim
+from organizafatura import ambienteUnidade, InsereUnidade, updatefatura, RealizaDow, verificafim, MontaPasta
 
 import time
 import shutil
@@ -14,7 +14,8 @@ from datetime import datetime
 #try:
 # ----------- Variaveis de configuração
 path_default = r"C:\Users\benhur.bittencourt\Envs\WebScrapy"
-path_dow2 = r"C:\Users\benhur.bittencourt\Documents\Glauber\Temp" #directory alternative
+path_dow2 = r"\\server\PUBLICO\Clientes" #directory alternative
+
 
 path_dow = (path_default + r"\Dow") #Change default directory for downloads
 log_status = (path_default + r"\status.txt")
@@ -25,11 +26,7 @@ log = (path_default + r"\log.txt")
 cnpj_inicial = ""
 
 if log_status == "finalizou":
-    updatefatura(1,0) # limpa campos de referencia das unidades   
-#print(path_dow)
-#shutil.move((path_dow + "/teste.txt"),(path_dow + str(8) + str(2020) + "_" + "141414" + ".txt"))
-#shutil.copy((path_dow + str(8) + str(2020) + "_" + "141414" + ".txt"), path_dow2)
-#input("pare home")
+    updatefatura(1,0) # limpa campos de referencia das unidades
 
 # ----------- Verifica status do ultimo processo
 txt_status = open(log_status, 'r')
@@ -193,8 +190,15 @@ for buttons in soup.find_all('img'):
                             #    shutil.copy((path_dow + "/Cativo/" + str(month) + str(year) + "_" + idunidade + ".pdf"), (path_dow2 + "/Cativo/" + datahora)) # move arquivo para outro diretório
                             #elif (ambiente == 1): # livre
                             #print("Ambiente Livre..")
-                            shutil.move((path_dow + r"\gerarconta.aspx"),(path_dow + "/" + str(month) + str(year) + "_" + idunidade + ".pdf"))
-                            shutil.copy((path_dow + "/" + str(month) + str(year) + "_" + idunidade + ".pdf"), path_dow2)
+                            caminho_cliente = (MontaPasta(idunidade,path_dow2,year2))                            
+                            if caminho_cliente == '':
+                                shutil.move((path_dow + r"\gerarconta.aspx"),(path_dow + "/" + str(month) + str(year) + "_" + idunidade + ".pdf"))
+                                shutil.copy((path_dow + "/" + str(month) + str(year) + "_" + idunidade + ".pdf"), (path_dow + "/Pastanaolocalizada"))
+                            else:
+                                shutil.move((path_dow + r"\gerarconta.aspx"),(path_dow + "/" + str(month) + str(year) + "_" + idunidade + ".pdf"))
+                                shutil.copy((path_dow + "/" + str(month) + str(year) + "_" + idunidade + ".pdf"), caminho_cliente)
+                            #shutil.move((path_dow + r"\gerarconta.aspx"),(path_dow + "/" + str(month) + str(year) + "_" + idunidade + ".pdf"))
+                            #shutil.copy((path_dow + "/" + str(month) + str(year) + "_" + idunidade + ".pdf"), path_dow2)
                             #else: # não localizado, cliente não encontra-se no banco de dados
                             #    print("Novo cliente..")
                             #    shutil.move((path_dow + "/gerarconta.aspx"),(path_dow + "/Outros/" + str(month) + str(year) + "_" + idunidade + ".pdf"))

@@ -1,4 +1,5 @@
 import psycopg2
+import os.path
 from datetime import date
 
 ########### Construct connection string
@@ -113,3 +114,34 @@ def RealizaDow(id_unidade,mes,ano):
     conn.close()
 
     return result # True realiza download
+
+def MontaPasta(unidade_consumidora,path,ano):
+    global conexao
+
+    sql = (" SELECT empresa.descricao, unidade.nome, distribuidora.descricao, unidade.id, unidade.ambiente "
+                    " FROM unidade inner join empresa on unidade.id_empresa = empresa.id "
+                    " inner join distribuidora on unidade.id_distribuidora = distribuidora.id where unidade_consumidora = '" + unidade_consumidora + "'")
+
+    conn = psycopg2.connect(conexao)
+    consulta = conn.cursor()
+    consulta.execute(sql)
+
+    id_unidade = 0
+    for row in consulta:
+        if row[4] == 1: #ambiente livre
+            path = (path + '/' + row[0] + "/" + unidade_consumidora + '_' + row[1].replace(" ","_") + '_ML/Faturas/Faturas_' + row[2] + "/Faturas_" + ano)
+        else: #ambiente cativo
+            path = (path + '/' + row[0] + "/" + unidade_consumidora + '_' + row[1].replace(" ","_") + '_ML/Faturas/Faturas_' + row[2] + "/Faturas_" + ano)
+
+        id_unidade = row[3]
+        break
+
+    if id_unidade > 0:
+        if os.path.isdir(path):
+            return path
+        else:
+            print("caminho não localizado, uc não localizada!")
+            return ""
+    else:
+        print("caminho não localizado, uc não localizada!")
+        return ""
