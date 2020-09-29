@@ -64,14 +64,15 @@ consulta = conn.cursor()
 sql = (" SELECT empresa.descricao, unidade.razao_social, unidade.unidade_consumidora, distribuidora.descricao, unidade.nome, unidade.id, "
                  " coalesce((select pastacliente from fat_rge where unidade.id = fat_rge.id_unidade and fat_rge.mes = " + str(mes_default) + " and fat_rge.ano = " + str(ano_default) + "),9)"
                  " FROM unidade inner join empresa on unidade.id_empresa = empresa.id "
-                 " inner join distribuidora on unidade.id_distribuidora = distribuidora.id where ccee_gestao = 1 and ambiente = 1 and distribuidora.descricao like '%rge%' ")
+                 " inner join distribuidora on unidade.id_distribuidora = distribuidora.id where ccee_gestao = 1 and ambiente = 1 and distribuidora.descricao like '%RGE%' ")
 
 consulta.execute(sql)
 
 for row in consulta:
     existe = (BuscaPasta("//server/PUBLICO/Clientes/",row[0],row[1],row[2],row[3],row[4].strip(),ano_default,mes_default))
-    if row[2] == '3081326661':
-        print(existe)
+
+    print("Empresa: " + row[0] + " Unidade: " + row[4])
+
     if existe:
         updatefatura(row[2],mes_default,ano_default,row[5],row[6])
 
