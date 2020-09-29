@@ -11,249 +11,250 @@ import os
 import os.path
 from datetime import datetime
 
-#try:
-# ----------- Variaveis de configuração
-path_default = r"C:\Users\benhur.bittencourt\Envs\WebScrapy"
-path_dow2 = r"\\server\PUBLICO\Clientes" #directory alternative
+try:
+    # ----------- Variaveis de configuração
+    path_default = r"C:\WebScrapy"
+    path_dow2 = r"\\server\PUBLICO\Clientes" #directory alternative
 
+    path_dow = (path_default + r"\Dow") #Change default directory for downloads
+    log_status = (path_default + r"\status.txt")
+    log_cnpj = (path_default + r"\ult_cnpj.txt")
+    log_contador = (path_default + r"\contador.txt")
+    log_ucnaoencontrada = (path_default + r"\uc_lost.txt")
+    log = (path_default + r"\log.txt")
+    cnpj_inicial = ""
 
-path_dow = (path_default + r"\Dow") #Change default directory for downloads
-log_status = (path_default + r"\status.txt")
-log_cnpj = (path_default + r"\ult_cnpj.txt")
-log_contador = (path_default + r"\contador.txt")
-log_ucnaoencontrada = (path_default + r"\uc_lost.txt")
-log = (path_default + r"\log.txt")
-cnpj_inicial = ""
+    if log_status == "finalizou":
+        updatefatura(1,0) # limpa campos de referencia das unidades
 
-if log_status == "finalizou":
-    updatefatura(1,0) # limpa campos de referencia das unidades
+    # ----------- Verifica status do ultimo processo
+    txt_status = open(log_status, 'r')
+    status = txt_status.readline()
+    if status == "erro":
+        txt_cnpj = open(log_cnpj, 'r')
+        cnpj_inicial = txt_cnpj.readline()
 
-# ----------- Verifica status do ultimo processo
-txt_status = open(log_status, 'r')
-status = txt_status.readline()
-if status == "erro":
-    txt_cnpj = open(log_cnpj, 'r')
-    cnpj_inicial = txt_cnpj.readline()
+    txt_status = open(log_status, 'w')
+    txt_status.write('em execução')
+    txt_status.close()
 
-txt_status = open(log_status, 'w')
-txt_status.write('em execução')
-txt_status.close()
+    # ----------- Log
+    log_conteudo = open(log, 'r') # lê conteudo do log
+    conteudo = log_conteudo.read() #salva conteudo existente
+    log_conteudo = open(log, 'w')
+    datahora = ((datetime.now().strftime('%d-%m-%Y')) + "-" + (datetime.now().strftime('%H%M')))
+    log_conteudo.write("******************ROBÔ CPFL/" + datahora + "******************\n")
 
-#----------- Diretórios
-#datahora = ((datetime.now().strftime('%d-%m-%Y')) + "-" + (datetime.now().strftime('%H%M')))
-#os.makedirs(path_dow2 + "/Livre/" + datahora) # cria diretório com caminho alternativo
-#os.makedirs(path_dow2 + "/Cativo/" + datahora) # cria diretório com caminho alternativo
-#os.makedirs(path_dow2 + "/Outros/" + datahora) # cria diretório com caminho alternativo
+    # ----------- CONFIGURAÇÕES DO NAVEGADOR
+    options = webdriver.ChromeOptions()
+    options.add_argument("--start-maximized")
+    options.add_experimental_option(
+    'prefs',
+        {
+            "download.default_directory": path_dow,
+            "download.prompt_for_download": False, #To auto download the file
+            "download.directory_upgrade": True,
+            "plugins.always_open_pdf_externally": True #It will not show PDF directly in chrome
+        }
+    )
 
-# ----------- CONFIGURAÇÕES DO NAVEGADOR
-options = webdriver.ChromeOptions()
-options.add_argument("--start-maximized")
-options.add_experimental_option(
-'prefs',
-    {
-        "download.default_directory": path_dow,
-        "download.prompt_for_download": False, #To auto download the file
-        "download.directory_upgrade": True,
-        "plugins.always_open_pdf_externally": True #It will not show PDF directly in chrome
-    }
-)
+    browser = webdriver.Chrome(ChromeDriverManager().install(),chrome_options=options)
+    browser.get("https://www.cpflempresas.com.br/")
 
-browser = webdriver.Chrome(ChromeDriverManager().install(),chrome_options=options)
-browser.get("https://www.cpflempresas.com.br/")
+    username = '010.295.140-38'
+    password = 'lud321'
 
-username = '010.295.140-38'
-password = 'lud321'
+    # ----------- input usuário e senha
+    print("-----------------Carregando formulário-----------------")
+    browser.execute_script(f'var element = document.getElementById("ctl00_ContentPlaceHolder1_loginmenu1_txtUSUARIO"); element.value = "{username}";')
+    browser.execute_script(f'var element = document.getElementById("ctl00_ContentPlaceHolder1_loginmenu1_txtSENHA"); element.value = "{password}";')
 
-# ----------- input usuário e senha
-print("-----------------Carregando formulário-----------------")
-browser.execute_script(f'var element = document.getElementById("ctl00_ContentPlaceHolder1_loginmenu1_txtUSUARIO"); element.value = "{username}";')
-browser.execute_script(f'var element = document.getElementById("ctl00_ContentPlaceHolder1_loginmenu1_txtSENHA"); element.value = "{password}";')
+    # ----------- Logar na pagina
+    print("-----------------Submit-----------------")
+    element = browser.find_element_by_id('ctl00_ContentPlaceHolder1_loginmenu1_btnLOGIN')
+    browser.execute_script("arguments[0].click();", element)
 
-# ----------- Logar na pagina
-print("-----------------Submit-----------------")
-element = browser.find_element_by_id('ctl00_ContentPlaceHolder1_loginmenu1_btnLOGIN')
-browser.execute_script("arguments[0].click();", element)
+    # ----------- seleção de cliente
+    print("-----------------seleção de cliente-----------------")
+    clientes = browser.find_element_by_id('ctl00_ContentPlaceHolder1_grdBPS')
+    html = clientes.get_attribute("innerHTML")
+    soup = BeautifulSoup(html, "html.parser")
 
-# ----------- seleção de cliente
-print("-----------------seleção de cliente-----------------")
-clientes = browser.find_element_by_id('ctl00_ContentPlaceHolder1_grdBPS')
-html = clientes.get_attribute("innerHTML")
-soup = BeautifulSoup(html, "html.parser")
-
-cont = 0
-cnpjs = []
-for cnpjempresa in soup.find_all('span'):
-    cont = (cont + 1)
-    if cont == 9:
-        cont = 0
-        cnpj = str(cnpjempresa)
-        cnpj = cnpj[27:41]
-        cnpjs.append(cnpj)
-
-rows = -1
-for buttons in soup.find_all('img'):
-    rows = (rows + 1)
     cont = 0
+    cnpjs = []
+    for cnpjempresa in soup.find_all('span'):
+        cont = (cont + 1)
+        if cont == 9:
+            cont = 0
+            cnpj = str(cnpjempresa)
+            cnpj = cnpj[27:41]
+            cnpjs.append(cnpj)
 
-    txt_contador = open(log_contador, 'w')
-    txt_contador.write(format(rows) + '-' + format(len(soup.find_all('img'))))
-    txt_contador.close()
+    rows = -1
+    for buttons in soup.find_all('img'):
+        rows = (rows + 1)
+        cont = 0
 
-    txt_cnpj = open(log_cnpj, 'w')
-    txt_cnpj.write(cnpjs[rows])
-    txt_cnpj.close()
+        txt_contador = open(log_contador, 'w')
+        txt_contador.write(format(rows) + '-' + format(len(soup.find_all('img'))))
+        txt_contador.close()
 
-    if ((cnpj_inicial == cnpjs[rows] or cnpj_inicial == "") and (cnpjs[rows] != '87556650001330')): # ignora o cnpj da bertolini S.A 87556650001330
-        cnpj_inicial = ""
+        txt_cnpj = open(log_cnpj, 'w')
+        txt_cnpj.write(cnpjs[rows])
+        txt_cnpj.close()
 
-        id = buttons.get('id')
-        element = browser.find_element_by_id(id)
-        browser.execute_script("arguments[0].click();", element)
+        if ((cnpj_inicial == cnpjs[rows] or cnpj_inicial == "") and (cnpjs[rows] != '87556650001330')): # ignora o cnpj da bertolini S.A 87556650001330
+            cnpj_inicial = ""
 
-        # ----------- seleção de instalação
-        print("-----------------seleção de instalação-----------------")
-        if len(browser.find_elements_by_id('ctl00_ContentPlaceHolder1_grdUcs')) > 0:
-            unidade = browser.find_element_by_id('ctl00_ContentPlaceHolder1_lblNOME').text
-            print("Unidade: " + unidade)
+            id = buttons.get('id')
+            element = browser.find_element_by_id(id)
+            browser.execute_script("arguments[0].click();", element)
 
-            instalacao = browser.find_element_by_id('ctl00_ContentPlaceHolder1_grdUcs')
-            html = instalacao.get_attribute("innerHTML")
-            soup_intalacao = BeautifulSoup(html, "html.parser")
+            # ----------- seleção de instalação
+            print("-----------------seleção de instalação-----------------")
+            if len(browser.find_elements_by_id('ctl00_ContentPlaceHolder1_grdUcs')) > 0:
+                unidade = browser.find_element_by_id('ctl00_ContentPlaceHolder1_lblNOME').text
+            
+                log_conteudo.write("--------------------------------------------------------------\n")
+                log_conteudo.write("Unidade: " + unidade + "\n")
+                print("Unidade: " + unidade)
 
-            for buttons_instalacao in soup_intalacao.find_all('img'):
-                print("-----------------instalação-----------------")
+                instalacao = browser.find_element_by_id('ctl00_ContentPlaceHolder1_grdUcs')
+                html = instalacao.get_attribute("innerHTML")
+                soup_intalacao = BeautifulSoup(html, "html.parser")
 
-                id_instalacao = buttons_instalacao.get('id')
-                element = browser.find_element_by_id(id_instalacao)
+                for buttons_instalacao in soup_intalacao.find_all('img'):
+                    print("-----------------instalação-----------------")
+
+                    id_instalacao = buttons_instalacao.get('id')
+                    element = browser.find_element_by_id(id_instalacao)
+                    browser.execute_script("arguments[0].click();", element)
+
+                    idunidade = browser.find_element_by_id('ctl00_ContentPlaceHolder1_dadoscliente1_lblINSTALACAO').text # busca unidade consumidora da empresa (id)
+                    mes_referencia = browser.find_element_by_id('ctl00_ContentPlaceHolder1_lblMESREFERENCIA').text # mÊs de referencia para montar descrição do arquivo
+                    month = mes_referencia[0:2] # ex 06
+                    year = mes_referencia[5:7] # ex 20
+                    year2 = mes_referencia[3:7] # ex: 2020
+
+                    log_conteudo.write("UC: " + idunidade + "\n")
+                    print("UC:" + idunidade)
+
+                    if (RealizaDow(idunidade,month,year2)): # verifica se UC é de uma unidade LIVRE, GESTÃO e RGE ou RGE-SUL
+                        # ----------- seleção da segunda via
+                        print("-----------------seleção de 2º via-----------------")
+                        element3 = browser.find_element_by_xpath('//a[@href="consultadebito/consultadebito.aspx"]') # botão 2º via
+                        browser.execute_script("arguments[0].click();", element3)
+
+                        # ----------- seleção de fatura
+                        print("-----------------seleção de fatura-----------------")
+                        if len(browser.find_elements_by_id('ctl00_ContentPlaceHolder1_grdFaturas')) > 0:
+                            fatura = browser.find_element_by_id('ctl00_ContentPlaceHolder1_grdFaturas') # grade de faturas
+                            html = fatura.get_attribute("innerHTML")
+                            soup_fatura = BeautifulSoup(html, "html.parser")
+
+                            # busca mes e ano referencia da grade para verificar se está correto o mes_referencia
+                            row = -1
+                            mes_referencia2 = ""
+                            element4 = browser.find_elements_by_class_name('texto14cinza')
+                            for mesref in element4:
+                                row = (row +1)
+                                if (row == 1):
+                                    mes_referencia = (mesref.text)
+                                    month_aux = mes_referencia[5:7] # ex 06
+                                    break
+
+                            if month != month_aux:
+                                month = month_aux
+                                year = mes_referencia[0:2] # ex 20
+                                year2 = mes_referencia[0:4] # ex 2020      
+
+                            log_conteudo.write("Referência: " + month + "-" + year + "\n")                                            
+
+                            for buttons_fatura in soup_fatura.find_all('input'):
+                                id_fatura = buttons_fatura.get('id')
+                                element = browser.find_element_by_id(id_fatura)
+                                browser.execute_script("arguments[0].click();", element) # marca o primeiro checkbox da grade
+
+                                # ----------- Download
+                                print("-----------------Download-----------------")
+
+                                if os.path.exists((path_dow + r"\gerarconta.aspx")): # remove arquivo caso tenha ficado de outro download
+                                    os.remove((path_dow + r"\gerarconta.aspx"))
+
+                                element = browser.find_element_by_id('ctl00_ContentPlaceHolder1_btnGERARFATURA') # botão download fatura
+                                browser.execute_script("arguments[0].click();", element)
+                                time.sleep(20)
+
+                                arquivo = (path_dow + "/" + str(month) + str(year) + "_" + idunidade + ".pdf")
+                                caminho_cliente = (MontaPasta(idunidade,path_dow2,year2,month,year))
+
+                                print("Caminho do Cliente:" + caminho_cliente)
+
+                                if caminho_cliente == '0':
+                                    shutil.move((path_dow + r"\gerarconta.aspx"),arquivo)
+                                    shutil.copy(arquivo, (path_dow + "/Pastanaolocalizada"))
+                                    log_conteudo.write("Pasta do cliente não localizada!\n")
+                                elif caminho_cliente == '1':
+                                    shutil.move((path_dow + r"\gerarconta.aspx"),arquivo)
+                                    shutil.copy(arquivo, (path_dow + "/Arquivojaexistente"))
+                                    log_conteudo.write("Arquivo já encontra-se na pasta!\n")
+                                else:
+                                    shutil.move((path_dow + r"\gerarconta.aspx"),arquivo)
+                                    shutil.copy(arquivo, caminho_cliente)
+                                    log_conteudo.write("Arquivo movido para: " + caminho_cliente + "\n")
+                                
+                                insere = (InsereUnidade(idunidade,month,year2)) # insere registro na tabela fat_rge para consulta de API
+
+                                browser.switch_to.window (browser.window_handles [1]) # seleciona aba do download
+                                time.sleep(5)
+                                browser.close() # fecha aba download
+                                browser.switch_to.window (browser.window_handles [0]) #seleciona aba principal
+
+                                break # sai do laço, faz download de uma única fatura (último mês)
+                        else:
+                            log_conteudo.write("Sem faturas para download\n")
+                            print("Sem faturas para download")
+
+                        # ----------- retorna para a seleção de instalação
+                        print("-----------------Retorna seleção de instalação-----------------")
+                        element = browser.find_element_by_id('ctl00_ContentPlaceHolder1_barranavegacao1_btnSELECIONAUC') # seleciona outro cliente
+                        browser.execute_script("arguments[0].click();", element)
+
+                    else:
+                        log_conteudo.write("Não realiza Downaload\n")
+
+                        print("Não realiza download")
+                        # ----------- retorna para a seleção de instalação
+                        print("-----------------Retorna seleção de instalação-----------------")
+                        element = browser.find_element_by_id('ctl00_ContentPlaceHolder1_barranavegacao1_btnSELECIONAUC') # seleciona outro cliente
+                        browser.execute_script("arguments[0].click();", element)
+
+                # ----------- retorna para a seleção de clientes
+                print("-----------------Retorna seleção de clientes-----------------")
+                element = browser.find_element_by_id('ctl00_ContentPlaceHolder1_btnSELECIONAPN')
+                browser.execute_script("arguments[0].click();", element)
+            else:
+                print("Cliente sem instalação")
+                element = browser.find_element_by_id('ctl00_ContentPlaceHolder1_btnOK') # botão selecionar outro cliente
                 browser.execute_script("arguments[0].click();", element)
 
-                idunidade = browser.find_element_by_id('ctl00_ContentPlaceHolder1_dadoscliente1_lblINSTALACAO').text # busca unidade consumidora da empresa (id)
-                mes_referencia = browser.find_element_by_id('ctl00_ContentPlaceHolder1_lblMESREFERENCIA').text # mÊs de referencia para montar descrição do arquivo
-                month = mes_referencia[0:2] # ex 06
-                year = mes_referencia[5:7] # ex 20
-                year2 = mes_referencia[3:7] # ex: 2020
+    print("-----------------Fim de processo-----------------")
 
-                print("UC:" + idunidade)
+    txt_status = open(log_status, 'w')
+    txt_status.write('finalizou')
+    txt_status.close()
 
-                if (RealizaDow(idunidade,month,year2)): # verifica se UC é de uma unidade LIVRE, GESTÃO e RGE ou RGE-SUL
-                    # ----------- seleção da segunda via
-                    print("-----------------seleção de 2º via-----------------")
-                    element3 = browser.find_element_by_xpath('//a[@href="consultadebito/consultadebito.aspx"]') # botão 2º via
-                    browser.execute_script("arguments[0].click();", element3)
+    log_conteudo.write(str(conteudo)) # apenda conteúdo do log já existente
+    log_conteudo.close()
 
-                    # ----------- seleção de fatura
-                    print("-----------------seleção de fatura-----------------")
-                    if len(browser.find_elements_by_id('ctl00_ContentPlaceHolder1_grdFaturas')) > 0:
-                        fatura = browser.find_element_by_id('ctl00_ContentPlaceHolder1_grdFaturas') # grade de faturas
-                        html = fatura.get_attribute("innerHTML")
-                        soup_fatura = BeautifulSoup(html, "html.parser")
+    browser.close()
+    (verificafim(log_ucnaoencontrada)) # armazena em um txt as uc da lista de download que NÃO foram encontradas no site (procuração vencida)
+except:
+    print("*************errrrrrrror*************")
+    txt_status = open(log_status, 'w')
+    txt_status.write('erro')
+    txt_status.close()
 
-                        # busca mes e ano referencia da grade para verificar se está correto o mes_referencia
-                        row = -1
-                        mes_referencia2 = ""
-                        element4 = browser.find_elements_by_class_name('texto14cinza')
-                        for mesref in element4:
-                            row = (row +1)
-                            if (row == 1):
-                                mes_referencia = (mesref.text)
-                                month_aux = mes_referencia[5:7] # ex 06
-                                break
-
-                        if month != month_aux:
-                            month = month_aux
-                            year = mes_referencia[0:2] # ex 20
-                            year2 = mes_referencia[0:4] # ex 2020
-                            # log unidade que tem mes de referencia disponivel antes da fatura está pronta para download
-                            txt_status = open(log, 'w')
-                            txt_status.write(unidade)
-                            txt_status.close()
-
-                        for buttons_fatura in soup_fatura.find_all('input'):
-                            id_fatura = buttons_fatura.get('id')
-                            element = browser.find_element_by_id(id_fatura)
-                            browser.execute_script("arguments[0].click();", element) # marca o primeiro checkbox da grade
-
-                            # ----------- Download
-                            print("-----------------Download-----------------")
-
-                            if os.path.exists((path_dow + r"\gerarconta.aspx")): # remove arquivo caso tenha ficado de outro download
-                                os.remove((path_dow + r"\gerarconta.aspx"))
-
-                            element = browser.find_element_by_id('ctl00_ContentPlaceHolder1_btnGERARFATURA') # botão download fatura
-                            browser.execute_script("arguments[0].click();", element)
-                            time.sleep(20)
-
-                            #ambiente = (ambienteUnidade(idunidade)) # busca pelo ambiente da unidade
-                            #if (ambiente == 0): #cativo
-                            #    print("Ambiente Cativo..")
-                            #    shutil.move((path_dow + "/gerarconta.aspx"),(path_dow + "/Cativo/" + str(month) + str(year) + "_" + idunidade + ".pdf"))
-                            #    shutil.copy((path_dow + "/Cativo/" + str(month) + str(year) + "_" + idunidade + ".pdf"), (path_dow2 + "/Cativo/" + datahora)) # move arquivo para outro diretório
-                            #elif (ambiente == 1): # livre
-                            #print("Ambiente Livre..")
-                            arquivo = (path_dow + "/" + str(month) + str(year) + "_" + idunidade + ".pdf")
-                            caminho_cliente = (MontaPasta(idunidade,path_dow2,year2))
-
-                            print("Caminho do Cliente:" caminho_cliente)
-
-                            if caminho_cliente == '0':
-                                shutil.move((path_dow + r"\gerarconta.aspx"),(path_dow + "/" + arquivo))
-                                shutil.copy((path_dow + "/" + arquivo), (path_dow + "/Pastanaolocalizada"))
-                            elif caminho_cliente == '1':
-                                shutil.move((path_dow + r"\gerarconta.aspx"),(path_dow + "/" + arquivo))
-                                shutil.copy((path_dow + "/" + arquivo), (path_dow + "/Arquivojaexistente"))
-                            else:
-                                shutil.move((path_dow + r"\gerarconta.aspx"),(path_dow + "/" + arquivo))
-                                shutil.copy((path_dow + "/" + arquivo), caminho_cliente)
-
-                            input("calma!")    
-                            #shutil.move((path_dow + r"\gerarconta.aspx"),(path_dow + "/" + str(month) + str(year) + "_" + idunidade + ".pdf"))
-                            #shutil.copy((path_dow + "/" + str(month) + str(year) + "_" + idunidade + ".pdf"), path_dow2)
-                            #else: # não localizado, cliente não encontra-se no banco de dados
-                            #    print("Novo cliente..")
-                            #    shutil.move((path_dow + "/gerarconta.aspx"),(path_dow + "/Outros/" + str(month) + str(year) + "_" + idunidade + ".pdf"))
-                            #    shutil.copy((path_dow + "/Outros/" + str(month) + str(year) + "_" + idunidade + ".pdf"), (path_dow2 + "/Outros/" + datahora))
-
-                            insere = (InsereUnidade(idunidade,month,year2)) # insere registro na tabela fat_rge para consulta de API
-
-                            browser.switch_to.window (browser.window_handles [1]) # seleciona aba do download
-                            time.sleep(5)
-                            browser.close() # fecha aba download
-                            browser.switch_to.window (browser.window_handles [0]) #seleciona aba principal
-
-                            break # sai do laço, faz download de uma única fatura (último mês)
-                    else:
-                        print("Sem faturas para download")
-
-                    # ----------- retorna para a seleção de instalação
-                    print("-----------------Retorna seleção de instalação-----------------")
-                    element = browser.find_element_by_id('ctl00_ContentPlaceHolder1_barranavegacao1_btnSELECIONAUC') # seleciona outro cliente
-                    browser.execute_script("arguments[0].click();", element)
-
-                else:
-                    print("Não realiza download")
-                    # ----------- retorna para a seleção de instalação
-                    print("-----------------Retorna seleção de instalação-----------------")
-                    element = browser.find_element_by_id('ctl00_ContentPlaceHolder1_barranavegacao1_btnSELECIONAUC') # seleciona outro cliente
-                    browser.execute_script("arguments[0].click();", element)
-
-            # ----------- retorna para a seleção de clientes
-            print("-----------------Retorna seleção de clientes-----------------")
-            element = browser.find_element_by_id('ctl00_ContentPlaceHolder1_btnSELECIONAPN')
-            browser.execute_script("arguments[0].click();", element)
-        else:
-            print("Cliente sem instalação")
-            element = browser.find_element_by_id('ctl00_ContentPlaceHolder1_btnOK') # botão selecionar outro cliente
-            browser.execute_script("arguments[0].click();", element)
-
-print("-----------------Fim de processo-----------------")
-
-txt_status = open(log_status, 'w')
-txt_status.write('finalizou')
-txt_status.close()
-browser.close()
-(verificafim(log_ucnaoencontrada)) # armazena em um txt as uc da lista de download que NÃO foram encontradas no site (procuração vencida)
-#except:
-#    print("*************errrrrrrror*************")
-#    txt_status = open(log_status, 'w')
-#    txt_status.write('erro')
-#    txt_status.close()
+    log_conteudo.write("*************error*************\n")
+    log_conteudo.write(str(conteudo)) # apenda conteúdo do log já existente
+    log_conteudo.close()

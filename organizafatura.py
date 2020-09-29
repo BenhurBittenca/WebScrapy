@@ -133,17 +133,21 @@ def MontaPasta(unidade_consumidora,path,ano,mes,ano2):
         else: #ambiente cativo
             path = (path + '/' + row[0] + "/" + unidade_consumidora + '_' + row[1].replace(" ","_") + '_ML/Faturas/Faturas_' + row[2] + "/Faturas_" + ano)
 
-        arquivo_renomeado = (mes + year + "_Fatura_" + row[2] + "_" + row[0].replace(" ","_") + "_" + row[1].replace(" ","_") + ".pdf")
+        arquivo_renomeado = (mes + ano2 + "_Fatura_" + row[2] + "_" + row[0].replace(" ","_") + "_" + row[1].replace(" ","_") + ".pdf")
 
         id_unidade = row[3]
         break
 
+    print("-----------------organiza fatura-----------------")
+    print("path:" + path)
+    print("arquivo:" + arquivo_renomeado)
+
     if id_unidade > 0:
         if os.path.isdir(path):
-            if (os.path.isfile(path + "/" + file)): # arquivo já existe na pasta
+            if (os.path.isfile(path + "/" + arquivo_renomeado)): # arquivo já existe na pasta
                 return "1"
             else:
-                return (path + "/" + file)
+                return (path + "/" + arquivo_renomeado)
         else:
             print("caminho não localizado, uc não localizada!")
             return "0"
