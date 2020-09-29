@@ -115,7 +115,7 @@ def RealizaDow(id_unidade,mes,ano):
 
     return result # True realiza download
 
-def MontaPasta(unidade_consumidora,path,ano):
+def MontaPasta(unidade_consumidora,path,ano,mes,ano2):
     global conexao
 
     sql = (" SELECT empresa.descricao, unidade.nome, distribuidora.descricao, unidade.id, unidade.ambiente "
@@ -133,15 +133,20 @@ def MontaPasta(unidade_consumidora,path,ano):
         else: #ambiente cativo
             path = (path + '/' + row[0] + "/" + unidade_consumidora + '_' + row[1].replace(" ","_") + '_ML/Faturas/Faturas_' + row[2] + "/Faturas_" + ano)
 
+        arquivo_renomeado = (mes + year + "_Fatura_" + row[2] + "_" + row[0].replace(" ","_") + "_" + row[1].replace(" ","_") + ".pdf")
+
         id_unidade = row[3]
         break
 
     if id_unidade > 0:
         if os.path.isdir(path):
-            return path
+            if (os.path.isfile(path + "/" + file)): # arquivo já existe na pasta
+                return "1"
+            else:
+                return (path + "/" + file)
         else:
             print("caminho não localizado, uc não localizada!")
-            return ""
+            return "0"
     else:
         print("caminho não localizado, uc não localizada!")
-        return ""
+        return "0"

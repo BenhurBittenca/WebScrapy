@@ -190,13 +190,22 @@ for buttons in soup.find_all('img'):
                             #    shutil.copy((path_dow + "/Cativo/" + str(month) + str(year) + "_" + idunidade + ".pdf"), (path_dow2 + "/Cativo/" + datahora)) # move arquivo para outro diretório
                             #elif (ambiente == 1): # livre
                             #print("Ambiente Livre..")
-                            caminho_cliente = (MontaPasta(idunidade,path_dow2,year2))                            
-                            if caminho_cliente == '':
-                                shutil.move((path_dow + r"\gerarconta.aspx"),(path_dow + "/" + str(month) + str(year) + "_" + idunidade + ".pdf"))
-                                shutil.copy((path_dow + "/" + str(month) + str(year) + "_" + idunidade + ".pdf"), (path_dow + "/Pastanaolocalizada"))
+                            arquivo = (path_dow + "/" + str(month) + str(year) + "_" + idunidade + ".pdf")
+                            caminho_cliente = (MontaPasta(idunidade,path_dow2,year2))
+
+                            print("Caminho do Cliente:" caminho_cliente)
+
+                            if caminho_cliente == '0':
+                                shutil.move((path_dow + r"\gerarconta.aspx"),(path_dow + "/" + arquivo))
+                                shutil.copy((path_dow + "/" + arquivo), (path_dow + "/Pastanaolocalizada"))
+                            elif caminho_cliente == '1':
+                                shutil.move((path_dow + r"\gerarconta.aspx"),(path_dow + "/" + arquivo))
+                                shutil.copy((path_dow + "/" + arquivo), (path_dow + "/Arquivojaexistente"))
                             else:
-                                shutil.move((path_dow + r"\gerarconta.aspx"),(path_dow + "/" + str(month) + str(year) + "_" + idunidade + ".pdf"))
-                                shutil.copy((path_dow + "/" + str(month) + str(year) + "_" + idunidade + ".pdf"), caminho_cliente)
+                                shutil.move((path_dow + r"\gerarconta.aspx"),(path_dow + "/" + arquivo))
+                                shutil.copy((path_dow + "/" + arquivo), caminho_cliente)
+
+                            input("calma!")    
                             #shutil.move((path_dow + r"\gerarconta.aspx"),(path_dow + "/" + str(month) + str(year) + "_" + idunidade + ".pdf"))
                             #shutil.copy((path_dow + "/" + str(month) + str(year) + "_" + idunidade + ".pdf"), path_dow2)
                             #else: # não localizado, cliente não encontra-se no banco de dados
