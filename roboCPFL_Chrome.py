@@ -15,6 +15,7 @@ try:
     # ----------- Variaveis de configuração
     path_default = r"C:\WebScrapy"
     path_dow2 = r"\\server\PUBLICO\Clientes" #directory alternative
+    path_copy = r'\\server\Técnico\Desenvolvimento\Upload Site' #pasta de upload do site
 
     path_dow = (path_default + r"\Dow") #Change default directory for downloads
     log_status = (path_default + r"\status.txt")
@@ -62,7 +63,7 @@ try:
     browser.get("https://www.cpflempresas.com.br/")
 
     username = '010.295.140-38'
-    password = 'lud321'
+    password = 'cpfl25'
 
     # ----------- input usuário e senha
     print("-----------------Carregando formulário-----------------")
@@ -193,14 +194,17 @@ try:
                                 if caminho_cliente == '0':
                                     shutil.move((path_dow + r"\gerarconta.aspx"),arquivo)
                                     shutil.copy(arquivo, (path_dow + "/Pastanaolocalizada"))
+                                    shutil.copy(arquivo, path_copy)
                                     log_conteudo.write("Pasta do cliente não localizada!\n")
                                 elif caminho_cliente == '1':
                                     shutil.move((path_dow + r"\gerarconta.aspx"),arquivo)
                                     shutil.copy(arquivo, (path_dow + "/Arquivojaexistente"))
+                                    shutil.copy(arquivo, path_copy)
                                     log_conteudo.write("Arquivo já encontra-se na pasta!\n")
                                 else:
                                     shutil.move((path_dow + r"\gerarconta.aspx"),arquivo)
                                     shutil.copy(arquivo, caminho_cliente)
+                                    shutil.copy(arquivo, path_copy)
                                     log_conteudo.write("Arquivo movido para: " + caminho_cliente + "\n")
                                 
                                 insere = (InsereUnidade(idunidade,month,year2)) # insere registro na tabela fat_rge para consulta de API
