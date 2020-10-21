@@ -84,32 +84,38 @@ def InsereUnidade(id_unidade,mes,ano):
 def RealizaDow(id_unidade,mes,ano):
     global conexao
     result = False
-    ccee_gestao = 0
     id = 0
+    mes_migracao = 0
+    ano_migracao = 0
 
     conn = psycopg2.connect(conexao)
     gestao = conn.cursor()
 
-    sql = ("SELECT unidade.id FROM unidade inner join distribuidora on unidade.id_distribuidora = distribuidora.id where unidade.unidade_consumidora = '" + str(id_unidade) + "' and ccee_gestao = 1 and ambiente = 1 and distribuidora.descricao like '%RGE%' ") #somente unidades que possuam gestão CCEE (ambiente livre), com distribuidra rge e rge sul
+    sql = ("SELECT unidade.id, extract(month from ccee_data_migracao), extract(year from ccee_data_migracao) FROM unidade inner join distribuidora on unidade.id_distribuidora = distribuidora.id where unidade.unidade_consumidora = '" + str(id_unidade) + "' and ccee_gestao = 1 and ambiente = 1 and distribuidora.descricao like '%RGE%' ") #somente unidades que possuam gestão CCEE (ambiente livre), com distribuidra rge e rge sul
     gestao.execute(sql)
 
     for row in gestao:
         id = row[0]
+        mes_migracao = row[1]
+        ano_migracao = row[2]
         result = True
         break
 
+    # insere na tabela unidade informação referenta a UC estar no site da CPFL, caso de ter vencido a procuração
     if id > 0:
-        # insere na tabela unidade informação referenta a UC estar no site da CPFL, caso de ter vencido a procuração
         updatefatura(0,id)
 
-        sql = ("SELECT unidade.id FROM fat_rge left join unidade on fat_rge.id_unidade = unidade.id where (unidade.unidade_consumidora = %s or fat_rge.unidade_consumidora = %s) and fat_rge.mes = %s and fat_rge.ano = %s ")
-        val = (id_unidade,id_unidade,mes,ano,)
-        consulta = conn.cursor()
-        consulta.execute(sql,val)
-        # verifica se o download da UC atual já não foi realizado para o mÊs e ano informado
-        for row in consulta:
-            result = False
-            break
+        if mes >= mes_migracao and ano >= ano_migracao: # Data de migração deve ser menor ou igual ao mes de referencia da fatura
+            sql = ("SELECT unidade.id FROM fat_rge left join unidade on fat_rge.id_unidade = unidade.id where (unidade.unidade_consumidora = %s or fat_rge.unidade_consumidora = %s) and fat_rge.mes = %s and fat_rge.ano = %s ")
+            val = (id_unidade,id_unidade,mes,ano,)
+            consulta = conn.cursor()
+            consulta.execute(sql,val)
+            # verifica se o download da UC atual já não foi realizado para o mÊs e ano informado
+            for row in consulta:
+                result = False
+                break
+        else:
+            result = False    
 
     conn.close()
 
