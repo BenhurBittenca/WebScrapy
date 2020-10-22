@@ -253,12 +253,13 @@ try:
 
     browser.close()
     (verificafim(log_ucnaoencontrada)) # armazena em um txt as uc da lista de download que NÃO foram encontradas no site (procuração vencida)
-except:
+except Exception as e:
     print("*************errrrrrrror*************")
     txt_status = open(log_status, 'w')
     txt_status.write('erro')
     txt_status.close()
 
     log_conteudo.write("*************error*************\n")
+    log_conteudo.write(str(e) + "\n")
     log_conteudo.write(str(conteudo)) # apenda conteúdo do log já existente
     log_conteudo.close()
