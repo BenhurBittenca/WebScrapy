@@ -86,6 +86,9 @@ def RealizaDow(id_unidade,mes,ano):
     result = False
     id = 0
 
+    if ano == '0000': # algumas empresas no site ficam com o mes e ano de referencia em branco
+        return False
+
     conn = psycopg2.connect(conexao)
     gestao = conn.cursor()
 
