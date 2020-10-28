@@ -13,9 +13,12 @@ conexao = "host={0} user={1} dbname={2} password={3}".format(host, user, dbname,
 def verificafim(path):
     global conexao
 
+    data_atual = str(date.today())
+
     conn = psycopg2.connect(conexao)
     consulta = conn.cursor()
-    consulta.execute("SELECT unidade.id FROM unidade inner join distribuidora on unidade.id_distribuidora = distribuidora.id where ccee_gestao = 1 and ambiente = 1 and fat_cpfl = 0 and distribuidora.descricao like '%RGE%' ")
+    consulta.execute("SELECT unidade.id FROM unidade inner join distribuidora on unidade.id_distribuidora = distribuidora.id "
+        " where distribuidora.descricao like '%RGE%' and fat_cpfl = 0 and ((ambiente = 1 and ccee_gestao = 1 and unidade.ccee_data_migracao <= '" + data_atual + "') or (ambiente = 0))")
 
     log = open(path, 'w')
 
@@ -94,18 +97,19 @@ def RealizaDow(id_unidade,mes,ano):
 
     data_filtro = (str(ano) + "-" + str(mes) + "-01")  
 
-    print(data_filtro)
-
-    #somente unidades que possuam gestão CCEE (ambiente livre), com distribuidra rge e rge sul e data de migração menor ou igual ao mes referencia
-    sql = ("SELECT unidade.id, ccee_data_migracao FROM unidade inner join distribuidora on unidade.id_distribuidora = distribuidora.id "
-        " where unidade.unidade_consumidora = '" + str(id_unidade) + "' and ccee_gestao = 1 and ambiente = 1 and distribuidora.descricao like '%RGE%' "
-        " and unidade.ccee_data_migracao <= '" + data_filtro + "'") 
+    #somente unidades livre (com gestão CCEE) ou cativo, com distribuidra rge e rge sul e data de migração menor ou igual ao mes referencia (se ambiente livre)
+    sql = ("SELECT unidade.id, ccee_data_migracao, ambiente FROM unidade inner join distribuidora on unidade.id_distribuidora = distribuidora.id "
+        " where unidade.unidade_consumidora = '" + str(id_unidade) + "' and ((ambiente = 1 and ccee_gestao = 1 and unidade.ccee_data_migracao <= '" + data_filtro + "')" 
+        " or (ambiente = 0)) and distribuidora.descricao like '%RGE%' ")       
     gestao.execute(sql)
 
     for row in gestao:
+        print("ambiente: " + str(row[2]))    
         id = row[0]
         result = True
         break
+
+    print(result)
 
     # insere na tabela unidade informação referenta a UC estar no site da CPFL, caso de ter vencido a procuração
     if id > 0:
@@ -119,6 +123,8 @@ def RealizaDow(id_unidade,mes,ano):
         for row in consulta:
             result = False
             break
+
+        print(result)
         
     conn.close()
 
@@ -140,7 +146,7 @@ def MontaPasta(unidade_consumidora,path,ano,mes,ano2):
         if row[4] == 1: #ambiente livre
             path = (path + '/' + row[0] + "/" + unidade_consumidora + '_' + row[1].replace(" ","_") + '_ML/Faturas/Faturas_' + row[2] + "/Faturas_" + ano)
         else: #ambiente cativo
-            path = (path + '/' + row[0] + "/" + unidade_consumidora + '_' + row[1].replace(" ","_") + '_ML/Faturas/Faturas_' + row[2] + "/Faturas_" + ano)
+            path = (path + '/' + row[0] + "/" + unidade_consumidora + '_' + row[1].replace(" ","_") + '/Faturas/Faturas_' + row[2] + "/Faturas_" + ano)
 
         arquivo_renomeado = (mes + ano2 + "_Fatura_" + row[2] + "_" + row[0].replace(" ","_") + "_" + row[1].replace(" ","_") + ".pdf")
 

@@ -10,12 +10,16 @@ password = "Knk4xmLD"
 conexao = "host={0} user={1} dbname={2} password={3}".format(host, user, dbname, password)
 ############
 
-def BuscaPasta(path,empresa,razao,uc,distribuidora,nome,ano,mes):
+def BuscaPasta(path,empresa,razao,uc,distribuidora,nome,ano,mes,ambiente,):
     # monta descrição arquivo da pasta
     empresa = str(empresa)
     distri = str(distribuidora)
     distri = (distri.replace("-", ""))
-    path = (path + '/' + empresa + "/" + uc + '_' + nome.replace(" ","_") + '_ML/Faturas/Faturas_' + distri + "/Faturas_" + str(ano))
+
+    if ambiente == 0: #cativo
+        path = (path + '/' + empresa + "/" + uc + '_' + nome.replace(" ","_") + '/Faturas/Faturas_' + distri + "/Faturas_" + str(ano))
+    else: #livre
+        path = (path + '/' + empresa + "/" + uc + '_' + nome.replace(" ","_") + '_ML/Faturas/Faturas_' + distri + "/Faturas_" + str(ano))
 
     # monta descrição arquivo
     ano = str(ano)
@@ -23,7 +27,7 @@ def BuscaPasta(path,empresa,razao,uc,distribuidora,nome,ano,mes):
         mes = "0" + str(mes)
     ano = ano[2:4]
 
-    file = format("/" + mes + ano + "_Fatura_" + distri + "_" + empresa.replace(" ","_") + "_" + nome.replace(" ","_") + ".pdf")
+    file = format("/" + str(mes) + str(ano) + "_Fatura_" + distri + "_" + empresa.replace(" ","_") + "_" + nome.replace(" ","_") + ".pdf")
 
     existe = os.path.isfile(path + file)
 
@@ -51,29 +55,40 @@ def updatefatura(uc,mes,ano,id,download):
 
 # mes e ano atual
 data_atual = str(date.today())
-mes_default = int(int(data_atual[5:7]))
-if mes_default == 1:
-    ano_default = int(int(data_atual[:4])-1)
-    mes_default = 12
+mes_ref = int(int(data_atual[5:7]))
+ano_ref = int(data_atual[:4])
+if mes_ref == 1:
+    ano_ref_livre = int(int(data_atual[:4])-1)
+    mes_ref_livre = 12
 else:
-    ano_default = int(data_atual[:4])
-    mes_default = (mes_default-1)
+    ano_ref_livre = int(data_atual[:4])
+    mes_ref_livre = (mes_ref-1)
 
 conn = psycopg2.connect(conexao)
 consulta = conn.cursor()
-sql = (" SELECT empresa.descricao, unidade.razao_social, unidade.unidade_consumidora, distribuidora.descricao, unidade.nome, unidade.id, "
-                 " coalesce((select pastacliente from fat_rge where unidade.id = fat_rge.id_unidade and fat_rge.mes = " + str(mes_default) + " and fat_rge.ano = " + str(ano_default) + "),9)"
-                 " FROM unidade inner join empresa on unidade.id_empresa = empresa.id "
-                 " inner join distribuidora on unidade.id_distribuidora = distribuidora.id where ccee_gestao = 1 and ambiente = 1 and distribuidora.descricao like '%RGE%' ")
+sql = (" SELECT empresa.descricao, unidade.razao_social, unidade.unidade_consumidora, distribuidora.descricao, unidade.nome, unidade.id, unidade.ambiente, "
+        " coalesce((select pastacliente from fat_rge where unidade.id = fat_rge.id_unidade "
+        " and ((fat_rge.mes = " + str(mes_ref_livre) + " and fat_rge.ano = " + str(mes_ref_livre) + " and unidade.ambiente = 1) or "
+        " (fat_rge.mes = " + str(mes_ref) + " and fat_rge.ano = " + str(ano_ref) + " and unidade.ambiente = 0))),9) "
+        " FROM unidade inner join empresa on unidade.id_empresa = empresa.id "
+        " inner join distribuidora on unidade.id_distribuidora = distribuidora.id "
+        " where distribuidora.descricao like '%RGE%' "
+        " and ((ccee_gestao = 1 and ambiente = 1 and unidade.ccee_data_migracao <='" + data_atual + "') or ambiente = 0)")
 
 consulta.execute(sql)
 
 for row in consulta:
-    existe = (BuscaPasta("//server/PUBLICO/Clientes/",row[0],row[1],row[2],row[3],row[4].strip(),ano_default,mes_default))
+    if row[6] == 0: #cativo
+        existe = (BuscaPasta("//server/PUBLICO/Clientes/",row[0],row[1],row[2],row[3],row[4].strip(),ano_ref,mes_ref,row[6]))
+    else: #livre
+        existe = (BuscaPasta("//server/PUBLICO/Clientes/",row[0],row[1],row[2],row[3],row[4].strip(),ano_ref_livre,mes_ref_livre,row[6]))
 
     print("Empresa: " + row[0] + " Unidade: " + row[4])
 
     if existe:
-        updatefatura(row[2],mes_default,ano_default,row[5],row[6])
+        if row[6] == 0: #cativo
+            updatefatura(row[2],mes_ref,ano_ref,row[5],row[7])
+        else: #livre
+            updatefatura(row[2],mes_ref_livre,ano_ref_livre,row[5],row[7])
 
 conn.close()

@@ -1,0 +1,223 @@
+******************ROBÔ CPFL/28-10-2020-1409******************
+--------------------------------------------------------------
+Unidade: ARIPE CITRUS AGRO INDUSTRIAL LTDA
+UC: 3093027118
+Não realiza Downaload
+--------------------------------------------------------------
+Unidade: FARINA S/A COMPONENTES AUTOMOTIVOS
+UC: 3081798561
+Não realiza Downaload
+--------------------------------------------------------------
+Unidade: BAZEI PLASTICOS E EMBALAGENS LTDA.
+UC: 3083325282
+Não realiza Downaload
+--------------------------------------------------------------
+Unidade: PETTENATI S/A. INDUSTRIA TEXTIL
+UC: 3082284185
+Não realiza Downaload
+--------------------------------------------------------------
+Unidade: FUNDACAO UNIVERSIDADE DE PASSO FUNDO
+UC: 3081744993
+Não realiza Downaload
+UC: 3082821433
+Não realiza Downaload
+UC: 3083286797
+Não realiza Downaload
+--------------------------------------------------------------
+Unidade: TRAMONTINA S/A CUTELARIA
+UC: 3082313448
+Não realiza Downaload
+--------------------------------------------------------------
+Unidade: HIDROVER EQUIPAMENTOS HIDRAULICOS LTDA.
+UC: 3085096495
+Não realiza Downaload
+--------------------------------------------------------------
+Unidade: LAURO WEBER & CIA LTDA
+UC: 3083296246
+Não realiza Downaload
+--------------------------------------------------------------
+Unidade: BSBIOS INDUSTRIA E COMERCIO DE BIODIESEL
+UC: 3085322210
+Não realiza Downaload
+UC: 4002628156
+Não realiza Downaload
+--------------------------------------------------------------
+Unidade: COOPERATIVA SANTA CLARA LTDA
+UC: 3083012265
+Não realiza Downaload
+UC: 3085244809
+Não realiza Downaload
+--------------------------------------------------------------
+Unidade: VIPRADO INDUSTRIA E COMERCIO DE VIDROS L
+UC: 3085074848
+Não realiza Downaload
+--------------------------------------------------------------
+Unidade: ALISUL ALIMENTOS S A
+UC: 3091876682
+Não realiza Downaload
+--------------------------------------------------------------
+Unidade: UNICASA INDUSTRIA DE MOVEIS S A
+UC: 3082327075
+Não realiza Downaload
+--------------------------------------------------------------
+Unidade: RENNER HERRMANN SA
+UC: 3083272430
+Não realiza Downaload
+--------------------------------------------------------------
+Unidade: MARELLI MOVEIS PARA ESCRITORIO SA
+UC: 3080273165
+Não realiza Downaload
+UC: 3082651764
+Não realiza Downaload
+--------------------------------------------------------------
+Unidade: LEITZ FERRAMENTAS PARA MADEIRA LTDA
+UC: 3095421156
+Sem faturas para download
+--------------------------------------------------------------
+Unidade: BOXFLEX COMPONENTES PARA CALCADOS LTDA
+UC: 3095129336
+Não realiza Downaload
+--------------------------------------------------------------
+Unidade: PCR METALURGICA LTDA ME
+UC: 4001698238
+Não realiza Downaload
+--------------------------------------------------------------
+Unidade: ALTERO DESIGN - INDUSTRIA E COMERCIO LTD
+UC: 3095018657
+Não realiza Downaload
+--------------------------------------------------------------
+Unidade: UNIDASUL DISTRIBUIDORA ALIMENTICIA S/A
+UC: 3081325910
+Não realiza Downaload
+--------------------------------------------------------------
+Unidade: GALVANOTEK EMBALAGENS LTDA
+UC: 3082928220
+Não realiza Downaload
+--------------------------------------------------------------
+Unidade: COOPERATIVA AGROINDUSTRIAL NOVA ALIANCA
+UC: 3085604239
+Não realiza Downaload
+--------------------------------------------------------------
+Unidade: TECMOLD INDUSTRIA E COMERCIO LTDA
+UC: 3085099906
+Não realiza Downaload
+--------------------------------------------------------------
+Unidade: GLOBAL MICROFUSAO LTDA
+UC: 3085559805
+Não realiza Downaload
+--------------------------------------------------------------
+Unidade: METAGRAF INDUSTRIA DE EMBALAGENS LTDA
+UC: 3083315930
+Não realiza Downaload
+--------------------------------------------------------------
+Unidade: GERAPLASTIC IND E COM DE PECAS PLASTICAS
+UC: 3082633722
+Não realiza Downaload
+UC: 3082880653
+Não realiza Downaload
+--------------------------------------------------------------
+Unidade: SIL - PLAST INDUSTRIA DE PLASTICOS LTDA
+UC: 3085303079
+Não realiza Downaload
+--------------------------------------------------------------
+Unidade: STELBEN - INDUSTRIA DE MOVEIS LTDA
+UC: 3085167999
+Não realiza Downaload
+--------------------------------------------------------------
+Unidade: COOPERATIVA AGRO PECUARIA PETROPOLIS LTD
+UC: 3082792737
+Não realiza Downaload
+UC: 3085601420
+Não realiza Downaload
+--------------------------------------------------------------
+Unidade: COOPERSHOES COOPERATIVA DE TRABALHO INDU
+UC: 3083322781
+Referência: 10-20
+Arquivo movido para: \\server\PUBLICO\Clientes/Coopershoes/3083322781_Picada_Café_Filial/Faturas/Faturas_RGE/Faturas_2020/1020_Fatura_RGE_Coopershoes_Picada_Café_Filial.pdf
+UC: 3085310994
+Não realiza Downaload
+--------------------------------------------------------------
+Unidade: FRIGORIFICO NICOLINI LTDA
+UC: 3082702062
+Não realiza Downaload
+UC: 3085118769
+Não realiza Downaload
+--------------------------------------------------------------
+Unidade: G PANIZ INDUSTRIA DE EQUIPAMENTOS PARA A
+UC: 3085043740
+Não realiza Downaload
+--------------------------------------------------------------
+Unidade: ARTEMOBILI MOVEIS LTDA
+UC: 3082076982
+Não realiza Downaload
+--------------------------------------------------------------
+Unidade: MAQUINAS SANMARTIN LTDA
+UC: 3081321056
+Não realiza Downaload
+--------------------------------------------------------------
+Unidade: TECNOLASER INDUSTRIA E COMERCIO LTDA
+UC: 3080164389
+Não realiza Downaload
+--------------------------------------------------------------
+Unidade: MOINHO DO NORDESTE S/A
+UC: 3082080698
+Não realiza Downaload
+--------------------------------------------------------------
+Unidade: TERMO ACO TRATAMENTO TERMICO LTDA
+UC: 3085496103
+Não realiza Downaload
+--------------------------------------------------------------
+Unidade: VIDROFORTE INDUSTRIA E COMERCIO DE VIDRO
+UC: 3082036394
+Não realiza Downaload
+--------------------------------------------------------------
+Unidade: CENTRO SUPERIOR DE TECNOLOGIA TECBRASIL
+UC: 3085185814
+Não realiza Downaload
+UC: 3095644167
+Não realiza Downaload
+--------------------------------------------------------------
+Unidade: SOC D BEB PANIZZON LT
+UC: 3081320689
+Não realiza Downaload
+--------------------------------------------------------------
+Unidade: ADEGA CASA DE MADEIRA LTDA
+UC: 3080893259
+Referência: 10-20
+Arquivo movido para: \\server\PUBLICO\Clientes/Adega Casa de Madeira/3080893259_Matriz/Faturas/Faturas_RGE/Faturas_2020/1020_Fatura_RGE_Adega_Casa_de_Madeira_Matriz.pdf
+--------------------------------------------------------------
+Unidade: INDUSTRIAL METALURGICA ROTAMIL EIRELI
+UC: 3083336349
+Não realiza Downaload
+UC: 3085145120
+Não realiza Downaload
+--------------------------------------------------------------
+Unidade: LABORATORIO TIARAJU ALIMENTOS E COSMETIC
+UC: 3085315980
+Referência: 10-20
+Arquivo movido para: \\server\PUBLICO\Clientes/Tiaraju/3085315980_Matriz/Faturas/Faturas_RGE/Faturas_2020/1020_Fatura_RGE_Tiaraju_Matriz.pdf
+--------------------------------------------------------------
+Unidade: METAFLEX INDUSTRIA DE EMBALAGENS LTDA
+UC: 3085577277
+Não realiza Downaload
+--------------------------------------------------------------
+Unidade: VITOR CARLOS TRES E CIA LTDA
+UC: 3085287547
+Não realiza Downaload
+--------------------------------------------------------------
+Unidade: RUMATARI INDUSTRIA E COMERCIO LTDA
+UC: 3083285156
+Não realiza Downaload
+--------------------------------------------------------------
+Unidade: TAMBORSUL INDUSTRIA E COMERCIO DE EMBALA
+UC: 3083289788
+Não realiza Downaload
+--------------------------------------------------------------
+Unidade: CASA VALDUGA VINHOS FINOS LTDA
+UC: 3085093605
+Não realiza Downaload
+--------------------------------------------------------------
+Unidade: ZEN ACESSORIOS PARA MOVEIS LTDA
+UC: 3085527685
+Não realiza Downaload
+--------------------------------------------------------------

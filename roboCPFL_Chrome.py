@@ -63,7 +63,7 @@ try:
     browser.get("https://www.cpflempresas.com.br/")
 
     username = '010.295.140-38'
-    password = 'cpfl25'
+    password = 'lud321'
 
     # ----------- input usuário e senha
     print("-----------------Carregando formulário-----------------")
@@ -140,7 +140,7 @@ try:
                     log_conteudo.write("UC: " + idunidade + "\n")
                     print("UC:" + idunidade)
 
-                    if (RealizaDow(idunidade,month,year2)): # verifica se UC é de uma unidade LIVRE, GESTÃO e RGE ou RGE-SUL
+                    if (RealizaDow(idunidade,month,year2)): # verifica se UC é de uma unidade LIVRE OU CATIVO, GESTÃO CCEE SIM (SE LIVRE), RGE ou RGE-SUL
                         # ----------- seleção da segunda via
                         print("-----------------seleção de 2º via-----------------")
                         element3 = browser.find_element_by_xpath('//a[@href="consultadebito/consultadebito.aspx"]') # botão 2º via
