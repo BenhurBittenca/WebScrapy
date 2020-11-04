@@ -68,12 +68,12 @@ conn = psycopg2.connect(conexao)
 consulta = conn.cursor()
 sql = (" SELECT empresa.descricao, unidade.razao_social, unidade.unidade_consumidora, distribuidora.descricao, unidade.nome, unidade.id, unidade.ambiente, "
         " coalesce((select pastacliente from fat_rge where unidade.id = fat_rge.id_unidade "
-        " and ((fat_rge.mes = " + str(mes_ref_livre) + " and fat_rge.ano = " + str(mes_ref_livre) + " and unidade.ambiente = 1) or "
+        " and ((fat_rge.mes = " + str(mes_ref_livre) + " and fat_rge.ano = " + str(ano_ref_livre) + " and unidade.ambiente = 1) or "
         " (fat_rge.mes = " + str(mes_ref) + " and fat_rge.ano = " + str(ano_ref) + " and unidade.ambiente = 0))),9) "
         " FROM unidade inner join empresa on unidade.id_empresa = empresa.id "
         " inner join distribuidora on unidade.id_distribuidora = distribuidora.id "
         " where distribuidora.descricao like '%RGE%' "
-        " and ((ccee_gestao = 1 and ambiente = 1 and unidade.ccee_data_migracao <='" + data_atual + "') or ambiente = 0)")
+        " and ((ccee_gestao = 1 and ambiente = 1 and unidade.ccee_data_migracao <='" + data_atual + "') or ambiente = 0) order by unidade.id")
 
 consulta.execute(sql)
 
@@ -84,8 +84,14 @@ for row in consulta:
         existe = (BuscaPasta("//server/PUBLICO/Clientes/",row[0],row[1],row[2],row[3],row[4].strip(),ano_ref_livre,mes_ref_livre,row[6]))
 
     print("Empresa: " + row[0] + " Unidade: " + row[4])
+    print()
+    print(existe)
+    print(row[7])
 
-    if existe:
+    if (row[5] == 4108):
+        input("calmaaaaa!")
+
+    if (existe) and (row[7] != 1):
         if row[6] == 0: #cativo
             updatefatura(row[2],mes_ref,ano_ref,row[5],row[7])
         else: #livre
