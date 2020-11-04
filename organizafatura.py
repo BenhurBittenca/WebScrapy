@@ -18,7 +18,9 @@ def verificafim(path):
     conn = psycopg2.connect(conexao)
     consulta = conn.cursor()
     consulta.execute("SELECT unidade.id FROM unidade inner join distribuidora on unidade.id_distribuidora = distribuidora.id "
-        " where distribuidora.descricao like '%RGE%' and fat_cpfl = 0 and ((ambiente = 1 and ccee_gestao = 1 and unidade.ccee_data_migracao <= '" + data_atual + "') or (ambiente = 0))")
+        " inner join modalidade on unidade.id_modalidade = modalidade.id "
+        " where distribuidora.descricao like '%RGE%' and fat_cpfl = 0 and ((ambiente = 1 and ccee_gestao = 1 and unidade.ccee_data_migracao <= '" + data_atual + "')"
+        " or (ambiente = 0 and modalidade.descricao <> 'Baixa tensão' and id_empresa <> 514))")
 
     log = open(path, 'w')
 
@@ -97,10 +99,12 @@ def RealizaDow(id_unidade,mes,ano):
 
     data_filtro = (str(ano) + "-" + str(mes) + "-01")  
 
-    #somente unidades livre (com gestão CCEE) ou cativo, com distribuidra rge e rge sul e data de migração menor ou igual ao mes referencia (se ambiente livre)
-    sql = ("SELECT unidade.id, ccee_data_migracao, ambiente FROM unidade inner join distribuidora on unidade.id_distribuidora = distribuidora.id "
+    #somente unidades livre (com gestão CCEE) ou cativo (menos baixa tensão), com distribuidra rge e rge sul e data de migração menor ou igual ao mes referencia (se ambiente livre)
+    sql = ("SELECT unidade.id, ccee_data_migracao, ambiente FROM unidade "
+        " inner join distribuidora on unidade.id_distribuidora = distribuidora.id "
+        " inner join modalidade on unidade.id_modalidade = modalidade.id "
         " where unidade.unidade_consumidora = '" + str(id_unidade) + "' and ((ambiente = 1 and ccee_gestao = 1 and unidade.ccee_data_migracao <= '" + data_filtro + "')" 
-        " or (ambiente = 0)) and distribuidora.descricao like '%RGE%' ")       
+        " or (ambiente = 0 and modalidade.descricao <> 'Baixa tensão')) and distribuidora.descricao like '%RGE%' ")       
     gestao.execute(sql)
 
     for row in gestao:
