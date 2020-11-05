@@ -84,12 +84,7 @@ for row in consulta:
         existe = (BuscaPasta("//server/PUBLICO/Clientes/",row[0],row[1],row[2],row[3],row[4].strip(),ano_ref_livre,mes_ref_livre,row[6]))
 
     print("Empresa: " + row[0] + " Unidade: " + row[4])
-    print()
-    print(existe)
-    print(row[7])
-
-    if (row[5] == 4108):
-        input("calmaaaaa!")
+    print()    
 
     if (existe) and (row[7] != 1):
         if row[6] == 0: #cativo
