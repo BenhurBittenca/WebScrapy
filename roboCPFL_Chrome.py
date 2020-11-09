@@ -25,13 +25,13 @@ try:
     log = (path_default + r"\log.txt")
     cnpj_inicial = ""
 
-    if log_status == "finalizou":
-        updatefatura(1,0) # limpa campos de referencia das unidades
 
     # ----------- Verifica status do ultimo processo
     txt_status = open(log_status, 'r')
     status = txt_status.readline()
-    if status == "erro":
+    if status == "finalizou":
+        updatefatura(1,0) # limpa campos de referencia das unidades
+    elif status == "erro":
         txt_cnpj = open(log_cnpj, 'r')
         cnpj_inicial = txt_cnpj.readline()
 
