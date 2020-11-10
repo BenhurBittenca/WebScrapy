@@ -11,22 +11,28 @@ import os
 import os.path
 from datetime import datetime
 
+# ----------- Variaveis de configuração
+path_default = r"C:\Users\benhur.bittencourt\Envs\WebScrapy"
+path_dow2 = r"\\server\PUBLICO\Clientes" #directory alternative
+path_copy = r'\\192.168.78.3\clientes\Ludfor\mainapp\static\faturas' #pasta de upload do site
+path_2Cloud = r"\\192.168.78.3\temp\Log_Robo"
+
+path_dow = (path_default + r"\Dow") #Change default directory for downloads
+log_status = (path_default + r"\status.txt")
+log_cnpj = (path_default + r"\ult_cnpj.txt")
+log_contador = (path_default + r"\contador.txt")
+log_ucnaoencontrada = (path_default + r"\uc_lost.txt")
+log = (path_default + r"\log.txt")
+cnpj_inicial = ""
+
+# ----------- Log
+log_conteudo = open(log, 'r') # lê conteudo do log
+conteudo = log_conteudo.read() #salva conteudo existente
+log_conteudo = open(log, 'w')
+datahora = ((datetime.now().strftime('%d-%m-%Y')) + "-" + (datetime.now().strftime('%H%M')))
+log_conteudo.write("******************ROBÔ CPFL/" + datahora + "******************\n")
+
 try:
-    # ----------- Variaveis de configuração
-    path_default = r"C:\WebScrapy"
-    path_dow2 = r"\\server\PUBLICO\Clientes" #directory alternative
-    path_copy = r'\\192.168.78.3\clientes\Ludfor\mainapp\static\faturas' #pasta de upload do site
-    path_2Cloud = r"\\192.168.78.3\temp\Log_Robo"
-
-    path_dow = (path_default + r"\Dow") #Change default directory for downloads
-    log_status = (path_default + r"\status.txt")
-    log_cnpj = (path_default + r"\ult_cnpj.txt")
-    log_contador = (path_default + r"\contador.txt")
-    log_ucnaoencontrada = (path_default + r"\uc_lost.txt")
-    log = (path_default + r"\log.txt")
-    cnpj_inicial = ""
-
-
     # ----------- Verifica status do ultimo processo
     txt_status = open(log_status, 'r')
     status = txt_status.readline()
@@ -40,13 +46,6 @@ try:
     txt_status.write('em execução')
     txt_status.close()
     shutil.copy(log_status, path_2Cloud) # copia log para pasta TEMP da 2Cloud
-
-    # ----------- Log
-    log_conteudo = open(log, 'r') # lê conteudo do log
-    conteudo = log_conteudo.read() #salva conteudo existente
-    log_conteudo = open(log, 'w')
-    datahora = ((datetime.now().strftime('%d-%m-%Y')) + "-" + (datetime.now().strftime('%H%M')))
-    log_conteudo.write("******************ROBÔ CPFL/" + datahora + "******************\n")
 
     # ----------- CONFIGURAÇÕES DO NAVEGADOR
     options = webdriver.ChromeOptions()
@@ -189,19 +188,17 @@ try:
                                 time.sleep(20)
 
                                 arquivo = (path_dow + "/" + str(month) + str(year) + "_" + idunidade + ".pdf")
-                                caminho_cliente = (MontaPasta(idunidade,path_dow2,year2,month,year))
+                                caminho_cliente, path_copy = (MontaPasta(idunidade,path_dow2,path_copy,year2,month,year))
 
                                 print("Caminho do Cliente:" + caminho_cliente)
 
                                 if caminho_cliente == '0':
                                     shutil.move((path_dow + r"\gerarconta.aspx"),arquivo)
                                     shutil.copy(arquivo, (path_dow + "/Pastanaolocalizada"))
-                                    shutil.copy(arquivo, path_copy)
                                     log_conteudo.write("Pasta do cliente não localizada!\n")
                                 elif caminho_cliente == '1':
                                     shutil.move((path_dow + r"\gerarconta.aspx"),arquivo)
-                                    shutil.copy(arquivo, (path_dow + "/Arquivojaexistente"))
-                                    shutil.copy(arquivo, path_copy)
+                                    shutil.copy(arquivo, (path_dow + "/Arquivojaexistente"))                                    
                                     log_conteudo.write("Arquivo já encontra-se na pasta!\n")
                                 else:
                                     shutil.move((path_dow + r"\gerarconta.aspx"),arquivo)
@@ -209,6 +206,10 @@ try:
                                     shutil.copy(arquivo, path_copy)
                                     log_conteudo.write("Arquivo movido para: " + caminho_cliente + "\n")
                                 
+                                print(caminho_cliente)
+                                print(path_copy)
+                                input("aguarde!!")
+
                                 insere = (InsereUnidade(idunidade,month,year2)) # insere registro na tabela fat_rge para consulta de API
 
                                 browser.switch_to.window (browser.window_handles [1]) # seleciona aba do download
@@ -261,7 +262,7 @@ try:
     shutil.copy(log_status, path_2Cloud) 
     shutil.copy(log_contador, path_2Cloud)         
     shutil.copy(log, path_2Cloud)
-    
+
     browser.close()
     (verificafim(log_ucnaoencontrada)) # armazena em um txt as uc da lista de download que NÃO foram encontradas no site (procuração vencida)
     shutil.copy(log_ucnaoencontrada, path_2Cloud)
