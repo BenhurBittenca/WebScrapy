@@ -16,6 +16,7 @@ try:
     path_default = r"C:\WebScrapy"
     path_dow2 = r"\\server\PUBLICO\Clientes" #directory alternative
     path_copy = r'\\server\Técnico\Desenvolvimento\Upload Site' #pasta de upload do site
+    path_2Cloud = r"\\192.168.78.3\temp\Log_Robo"
 
     path_dow = (path_default + r"\Dow") #Change default directory for downloads
     log_status = (path_default + r"\status.txt")
@@ -38,6 +39,7 @@ try:
     txt_status = open(log_status, 'w')
     txt_status.write('em execução')
     txt_status.close()
+    shutil.copy(log_status, path_2Cloud) # copia log para pasta TEMP da 2Cloud
 
     # ----------- Log
     log_conteudo = open(log, 'r') # lê conteudo do log
@@ -242,6 +244,10 @@ try:
                 element = browser.find_element_by_id('ctl00_ContentPlaceHolder1_btnOK') # botão selecionar outro cliente
                 browser.execute_script("arguments[0].click();", element)
 
+        # copia log para pasta TEMP da 2Cloud
+        shutil.copy(log_contador, path_2Cloud)         
+        shutil.copy(log, path_2Cloud)       
+
     print("-----------------Fim de processo-----------------")
 
     txt_status = open(log_status, 'w')
@@ -251,8 +257,14 @@ try:
     log_conteudo.write(str(conteudo)) # apenda conteúdo do log já existente
     log_conteudo.close()
 
+    # copia log para pasta TEMP da 2Cloud
+    shutil.copy(log_status, path_2Cloud) 
+    shutil.copy(log_contador, path_2Cloud)         
+    shutil.copy(log, path_2Cloud)
+    
     browser.close()
     (verificafim(log_ucnaoencontrada)) # armazena em um txt as uc da lista de download que NÃO foram encontradas no site (procuração vencida)
+    shutil.copy(log_ucnaoencontrada, path_2Cloud)
 except Exception as e:
     print("*************errrrrrrror*************")
     txt_status = open(log_status, 'w')
@@ -263,3 +275,8 @@ except Exception as e:
     log_conteudo.write(str(e) + "\n")
     log_conteudo.write(str(conteudo)) # apenda conteúdo do log já existente
     log_conteudo.close()
+
+    # copia log para pasta TEMP da 2Cloud
+    shutil.copy(log_status, path_2Cloud) 
+    shutil.copy(log_contador, path_2Cloud)         
+    shutil.copy(log, path_2Cloud)

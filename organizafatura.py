@@ -3,7 +3,7 @@ import os.path
 from datetime import date
 
 ########### Construct connection string
-host = "localhost"
+host = "192.168.78.2"
 dbname = "ludfor"
 user = "ludfor"
 password = "Knk4xmLD"
