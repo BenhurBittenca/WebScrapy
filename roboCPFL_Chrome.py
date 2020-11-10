@@ -97,15 +97,15 @@ try:
         rows = (rows + 1)
         cont = 0
 
-        txt_contador = open(log_contador, 'w')
-        txt_contador.write(format(rows) + '-' + format(len(soup.find_all('img'))))
-        txt_contador.close()
-
-        txt_cnpj = open(log_cnpj, 'w')
-        txt_cnpj.write(cnpjs[rows])
-        txt_cnpj.close()
-
         if ((cnpj_inicial == cnpjs[rows] or cnpj_inicial == "") and (cnpjs[rows] != '87556650001330')): # ignora o cnpj da bertolini S.A 87556650001330
+            txt_contador = open(log_contador, 'w')
+            txt_contador.write(format(rows) + '-' + format(len(soup.find_all('img'))))
+            txt_contador.close()
+
+            txt_cnpj = open(log_cnpj, 'w')
+            txt_cnpj.write(cnpjs[rows])
+            txt_cnpj.close()
+
             cnpj_inicial = ""
 
             id = buttons.get('id')
@@ -203,7 +203,8 @@ try:
                                 else:
                                     shutil.move((path_dow + r"\gerarconta.aspx"),arquivo)
                                     shutil.copy(arquivo, caminho_cliente)
-                                    shutil.copy(arquivo, path_copy)
+                                    shutil.copy(caminho_cliente, path_copy)
+
                                     log_conteudo.write("Arquivo movido para: " + caminho_cliente + "\n")
                                 
                                 print(caminho_cliente)
@@ -245,9 +246,9 @@ try:
                 element = browser.find_element_by_id('ctl00_ContentPlaceHolder1_btnOK') # botão selecionar outro cliente
                 browser.execute_script("arguments[0].click();", element)
 
-        # copia log para pasta TEMP da 2Cloud
-        shutil.copy(log_contador, path_2Cloud)         
-        shutil.copy(log, path_2Cloud)       
+            # copia log para pasta TEMP da 2Cloud
+            shutil.copy(log_contador, path_2Cloud)         
+            shutil.copy(log, path_2Cloud)       
 
     print("-----------------Fim de processo-----------------")
 
