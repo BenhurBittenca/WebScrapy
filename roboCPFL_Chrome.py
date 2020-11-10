@@ -15,7 +15,7 @@ try:
     # ----------- Variaveis de configuração
     path_default = r"C:\WebScrapy"
     path_dow2 = r"\\server\PUBLICO\Clientes" #directory alternative
-    path_copy = r'\\server\Técnico\Desenvolvimento\Upload Site' #pasta de upload do site
+    path_copy = r'\\192.168.78.3\clientes\Ludfor\mainapp\static\faturas' #pasta de upload do site
     path_2Cloud = r"\\192.168.78.3\temp\Log_Robo"
 
     path_dow = (path_default + r"\Dow") #Change default directory for downloads
