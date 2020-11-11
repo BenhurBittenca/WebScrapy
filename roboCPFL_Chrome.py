@@ -12,7 +12,7 @@ import os.path
 from datetime import datetime
 
 # ----------- Variaveis de configuração
-path_default = r"C:\Users\benhur.bittencourt\Envs\WebScrapy"
+path_default = r"C:\WebScrapy"
 path_dow2 = r"\\server\PUBLICO\Clientes" #directory alternative
 path_copy = r'\\192.168.78.3\clientes\Ludfor\mainapp\static\faturas' #pasta de upload do site
 path_2Cloud = r"\\192.168.78.3\temp\Log_Robo"
@@ -188,9 +188,10 @@ try:
                                 time.sleep(20)
 
                                 arquivo = (path_dow + "/" + str(month) + str(year) + "_" + idunidade + ".pdf")
-                                caminho_cliente, path_copy = (MontaPasta(idunidade,path_dow2,path_copy,year2,month,year))
+                                caminho_cliente, caminho_2Cloud = (MontaPasta(idunidade,path_dow2,path_copy,year2,month,year))
 
                                 print("Caminho do Cliente:" + caminho_cliente)
+                                print("Caminho da 2Cloud:" + caminho_2Cloud)
 
                                 if caminho_cliente == '0':
                                     shutil.move((path_dow + r"\gerarconta.aspx"),arquivo)
@@ -203,14 +204,11 @@ try:
                                 else:
                                     shutil.move((path_dow + r"\gerarconta.aspx"),arquivo)
                                     shutil.copy(arquivo, caminho_cliente)
-                                    shutil.copy(caminho_cliente, path_copy)
+                                    shutil.copy(arquivo, caminho_2Cloud)
 
                                     log_conteudo.write("Arquivo movido para: " + caminho_cliente + "\n")
+                                    log_conteudo.write("Arquivo movido para 2Cloud: " + caminho_2Cloud + "\n")
                                 
-                                print(caminho_cliente)
-                                print(path_copy)
-                                input("aguarde!!")
-
                                 insere = (InsereUnidade(idunidade,month,year2)) # insere registro na tabela fat_rge para consulta de API
 
                                 browser.switch_to.window (browser.window_handles [1]) # seleciona aba do download

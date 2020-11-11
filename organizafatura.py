@@ -152,7 +152,7 @@ def MontaPasta(unidade_consumidora,path,path2,ano,mes,ano2):
             path2 = (path2 + '/' + row[0] + "/" + unidade_consumidora + '_' + row[1].replace(" ","_") + '_ML/Faturas/Faturas_' + row[2] + "/Faturas_" + ano)
         else: #ambiente cativo
             path = (path + '/' + row[0] + "/" + unidade_consumidora + '_' + row[1].replace(" ","_") + '/Faturas/Faturas_' + row[2] + "/Faturas_" + ano)
-            path2 = (path2 + '/' + row[0] + "/" + unidade_consumidora + '_' + row[1].replace(" ","_") + '_ML/Faturas/Faturas_' + row[2] + "/Faturas_" + ano)
+            path2 = (path2 + '/' + row[0] + "/" + unidade_consumidora + '_' + row[1].replace(" ","_") + '/Faturas/Faturas_' + row[2] + "/Faturas_" + ano)
 
         arquivo_renomeado = (mes + ano2 + "_Fatura_" + row[2] + "_" + row[0].replace(" ","_") + "_" + row[1].replace(" ","_") + ".pdf")
 
@@ -160,18 +160,22 @@ def MontaPasta(unidade_consumidora,path,path2,ano,mes,ano2):
         break
 
     print("-----------------organiza fatura-----------------")
-    print("path:" + path)
-    print("arquivo:" + arquivo_renomeado)
+    print("path: " + path)
+    print("arquivo: " + arquivo_renomeado)    
 
     if id_unidade > 0:
         if os.path.isdir(path):
             if (os.path.isfile(path + "/" + arquivo_renomeado)): # arquivo já existe na pasta
                 return ("1","")                
             else:
+                if not(os.path.isdir(path2)):
+                    print("Pasta servidor 2Cloud não localizada, criando!")
+                    os.makedirs(path2)
+                
                 return ((path + "/" + arquivo_renomeado), (path2 + "/" + arquivo_renomeado))
         else:
             print("caminho não localizado, uc não localizada!")
             return ("0","")
     else:
-        print("caminho não localizado, uc não localizada!")
+        print("Uc não localizada!")
         return ("0","")
