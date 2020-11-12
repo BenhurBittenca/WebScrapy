@@ -10,6 +10,32 @@ password = "Knk4xmLD"
 conexao = "host={0} user={1} dbname={2} password={3}".format(host, user, dbname, password)
 ############
 
+def inserefatunidade(path,arquivo,mes,ano,id_unidade,tipo):
+    caminho_completo = ('faturas' + '/' + path + '/' + arquivo)
+
+    sql = "SELECT ID FROM unidades_faturas WHERE caminho = %s"
+    val = (caminho_completo,)
+    conn2 = psycopg2.connect(conexao)
+    consulta2 = conn2.cursor()
+    consulta2.execute(sql,val)
+
+    existe = False
+    for row2 in consulta2:
+        existe = True
+        break
+    
+    conn2.close()
+
+    if not existe:
+        sql = "INSERT INTO unidades_faturas VALUES (default,%s, %s, %s, %s, %s)"
+        val = (id_unidade,mes,ano,caminho_completo,tipo,)
+
+        conn2 = psycopg2.connect(conexao)
+        insert = conn2.cursor()
+        insert.execute(sql,val)
+        conn2.commit()
+        conn2.close()
+
 def verificafim(path):
     global conexao
 
@@ -147,12 +173,15 @@ def MontaPasta(unidade_consumidora,path,path2,ano,mes,ano2):
 
     id_unidade = 0
     for row in consulta:
+        caminho = ''
+        arquivo = ''
+
         if row[4] == 1: #ambiente livre
             path = (path + '/' + row[0] + "/" + unidade_consumidora + '_' + row[1].replace(" ","_") + '_ML/Faturas/Faturas_' + row[2] + "/Faturas_" + ano)
-            path2 = (path2 + '/' + row[0] + "/" + unidade_consumidora + '_' + row[1].replace(" ","_") + '_ML/Faturas/Faturas_' + row[2] + "/Faturas_" + ano)
+            caminho = (row[0] + "/" + unidade_consumidora + '_' + row[1].replace(" ","_") + '_ML/Faturas/Faturas_' + row[2] + "/Faturas_" + ano)
         else: #ambiente cativo
             path = (path + '/' + row[0] + "/" + unidade_consumidora + '_' + row[1].replace(" ","_") + '/Faturas/Faturas_' + row[2] + "/Faturas_" + ano)
-            path2 = (path2 + '/' + row[0] + "/" + unidade_consumidora + '_' + row[1].replace(" ","_") + '/Faturas/Faturas_' + row[2] + "/Faturas_" + ano)
+            caminho = (row[0] + "/" + unidade_consumidora + '_' + row[1].replace(" ","_") + '/Faturas/Faturas_' + row[2] + "/Faturas_" + ano)
 
         arquivo_renomeado = (mes + ano2 + "_Fatura_" + row[2] + "_" + row[0].replace(" ","_") + "_" + row[1].replace(" ","_") + ".pdf")
 
@@ -168,14 +197,16 @@ def MontaPasta(unidade_consumidora,path,path2,ano,mes,ano2):
             if (os.path.isfile(path + "/" + arquivo_renomeado)): # arquivo já existe na pasta
                 return ("1","")                
             else:
+                inserefatunidade(caminho,arquivo_renomeado,mes,ano,id_unidade,0)
                 if not(os.path.isdir(path2)):
                     print("Pasta servidor 2Cloud não localizada, criando!")
                     os.makedirs(path2)
                 
-                return ((path + "/" + arquivo_renomeado), (path2 + "/" + arquivo_renomeado))
+                return ((path + "/" + arquivo_renomeado), (path2 + "/" + caminho + "/" + arquivo_renomeado))
         else:
             print("caminho não localizado, uc não localizada!")
             return ("0","")
     else:
         print("Uc não localizada!")
         return ("0","")
+
