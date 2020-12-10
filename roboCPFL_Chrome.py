@@ -60,7 +60,7 @@ try:
         }
     )
 
-    browser = webdriver.Chrome(ChromeDriverManager().install(),chrome_options=options)
+    browser = webdriver.Chrome(executable_path='C:\WebScrapy\chromedriver.exe',chrome_options=options)
     browser.get("https://www.cpflempresas.com.br/")
 
     username = '010.295.140-38'
@@ -185,7 +185,7 @@ try:
 
                                 element = browser.find_element_by_id('ctl00_ContentPlaceHolder1_btnGERARFATURA') # botão download fatura
                                 browser.execute_script("arguments[0].click();", element)
-                                time.sleep(20)
+                                time.sleep(30)
 
                                 arquivo = (path_dow + "/" + str(month) + str(year) + "_" + idunidade + ".pdf")
                                 caminho_cliente, caminho_2Cloud = (MontaPasta(idunidade,path_dow2,path_copy,year2,month,year))
@@ -203,7 +203,7 @@ try:
                                     log_conteudo.write("Arquivo já encontra-se na pasta!\n")
                                 else:
                                     shutil.move((path_dow + r"\gerarconta.aspx"),arquivo)
-                                    shutil.copy(arquivo, caminho_cliente)
+                                    shutil.copy(arquivo, caminho_cliente)                                
                                     shutil.copy(arquivo, caminho_2Cloud)
 
                                     log_conteudo.write("Arquivo movido para: " + caminho_cliente + "\n")
@@ -269,13 +269,11 @@ except Exception as e:
     print("*************errrrrrrror*************")
     txt_status = open(log_status, 'w')
     txt_status.write('erro')
-    txt_status.close()
-
+    txt_status.close()#
     log_conteudo.write("*************error*************\n")
     log_conteudo.write(str(e) + "\n")
     log_conteudo.write(str(conteudo)) # apenda conteúdo do log já existente
-    log_conteudo.close()
-
+    log_conteudo.close()#
     # copia log para pasta TEMP da 2Cloud
     shutil.copy(log_status, path_2Cloud) 
     shutil.copy(log_contador, path_2Cloud)         

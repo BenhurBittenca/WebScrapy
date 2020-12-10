@@ -10,6 +10,41 @@ password = "Knk4xmLD"
 conexao = "host={0} user={1} dbname={2} password={3}".format(host, user, dbname, password)
 ############
 
+def tipodearquivo(arquivo):
+    tparquivo = ''
+    if "lp1" in arquivo.lower():
+        tparquivo = 'LP1'
+    elif "lp2" in arquivo.lower():
+        tparquivo = 'LP2'
+    elif "lp3" in arquivo.lower():
+        tparquivo = 'LP3'
+    elif "lp4" in arquivo.lower():
+        tparquivo = 'LP4'
+    elif "lp5" in arquivo.lower():
+        tparquivo = 'LP5'
+    elif "cp1" in arquivo.lower():
+        tparquivo = 'CP1'
+    elif "cp2" in arquivo.lower():
+        tparquivo = 'CP2'
+    elif "cp3" in arquivo.lower():
+        tparquivo = 'CP3'
+    elif "cp4" in arquivo.lower():
+        tparquivo = 'CP4'
+    elif "cp5" in arquivo.lower():
+        tparquivo = 'CP5'     
+    elif "c1" in arquivo.lower():
+        tparquivo = 'C1'
+    elif "c2" in arquivo.lower():
+        tparquivo = 'C2'
+    elif "c3" in arquivo.lower():
+        tparquivo = 'C3'
+    elif "c4" in arquivo.lower():
+        tparquivo = 'C4'
+    elif "c5" in arquivo.lower():
+        tparquivo = 'C5'    
+    
+    return tparquivo
+
 def inserefatunidade(path,arquivo,mes,ano,id_unidade,tipo):
     caminho_completo = ('faturas' + '/' + path + '/' + arquivo)
 
@@ -27,8 +62,10 @@ def inserefatunidade(path,arquivo,mes,ano,id_unidade,tipo):
     conn2.close()
 
     if not existe:
-        sql = "INSERT INTO unidades_faturas VALUES (default,%s, %s, %s, %s, %s)"
-        val = (id_unidade,mes,ano,caminho_completo,tipo,)
+        tparquivo = tipodearquivo(arquivo)
+
+        sql = "INSERT INTO unidades_faturas VALUES (default,%s, %s, %s, %s, %s, %s)"
+        val = (id_unidade,mes,ano,caminho_completo,tipo,tparquivo,)
 
         conn2 = psycopg2.connect(conexao)
         insert = conn2.cursor()
@@ -198,9 +235,9 @@ def MontaPasta(unidade_consumidora,path,path2,ano,mes,ano2):
                 return ("1","")                
             else:
                 inserefatunidade(caminho,arquivo_renomeado,mes,ano,id_unidade,0)
-                if not(os.path.isdir(path2)):
+                if not(os.path.isdir(path2 + "/" + caminho)):
                     print("Pasta servidor 2Cloud não localizada, criando!")
-                    os.makedirs(path2)
+                    os.makedirs((path2 + "/" + caminho))
                 
                 return ((path + "/" + arquivo_renomeado), (path2 + "/" + caminho + "/" + arquivo_renomeado))
         else:
