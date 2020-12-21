@@ -42,8 +42,8 @@ def updatefatura(uc,mes,ano,id,download):
     insert = conn.cursor()
 
     if download == 9: # quando fatura foi baixada de forma manual e colocada na pasta do cliente
-        sql = "INSERT INTO fat_rge VALUES (default, %s, %s, %s, %s, %s,1)"
-        val = (id,uc,mes,ano,data_atual,)
+        sql = "INSERT INTO fat_rge VALUES (default, %s, %s, %s, %s, 1, %s)"
+        val = (uc,mes,ano,data_atual,id,)
     else:
         sql = "UPDATE fat_rge SET pastacliente = 1 WHERE unidade_consumidora = %s and mes = %s and ano = %s"
         val = (uc,mes,ano,)
@@ -92,15 +92,17 @@ if status != 'em execução':
 
         conn = psycopg2.connect(conexao)
         consulta = conn.cursor()
-        sql = (" SELECT empresa.descricao, unidade.razao_social, unidade.unidade_consumidora, distribuidora.descricao, unidade.nome, unidade.id, unidade.ambiente, "
-                " coalesce((select pastacliente from fat_rge where unidade.id = fat_rge.id_unidade "
-                " and ((fat_rge.mes = " + str(mes_ref_livre) + " and fat_rge.ano = " + str(ano_ref_livre) + " and unidade.ambiente = 1) or "
-                " (fat_rge.mes = " + str(mes_ref) + " and fat_rge.ano = " + str(ano_ref) + " and unidade.ambiente = 0))),9) "
+        sql = (" SELECT empresa.descricao, unidade.razao_social, uc.unidade_consumidora, distribuidora.descricao_ludfor, unidade.nome, uc.id, uc.ambiente, "
+                " coalesce((select pastacliente from fat_rge where uc.id = fat_rge.id_unidade_consumidora "
+                " and ((fat_rge.mes = " + str(mes_ref_livre) + " and fat_rge.ano = " + str(ano_ref_livre) + " and uc.ambiente = 1) or "
+                " (fat_rge.mes = " + str(mes_ref) + " and fat_rge.ano = " + str(ano_ref) + " and uc.ambiente = 0))),9) "
                 " FROM unidade inner join empresa on unidade.id_empresa = empresa.id "
-                " inner join modalidade on unidade.id_modalidade = modalidade.id "
-                " inner join distribuidora on unidade.id_distribuidora = distribuidora.id "
-                " where distribuidora.descricao like '%RGE%' "        
-                " and ((ccee_gestao = 1 and ambiente = 1 and unidade.ccee_data_migracao <='" + data_atual + "') or "
+                " inner join unidades_consumidoras as uc on uc.id_unidade = unidade.id "
+                " inner join modalidade on uc.id_modalidade = modalidade.id "
+                " inner join distribuidora on uc.id_distribuidora = distribuidora.id "
+                " where distribuidora.descricao_ludfor like '%RGE%' "        
+                #" and ((ccee_gestao = 1 and ambiente = 1 and unidade.ccee_data_migracao <='" + data_atual + "') or "
+                " and ((ccee_gestao = 1 and ambiente = 1) or "
                 " (ambiente = 0 and modalidade.descricao <> 'Baixa tensão' and id_empresa <> 514)) order by unidade.id")
 
         consulta.execute(sql)

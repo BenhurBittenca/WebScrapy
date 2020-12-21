@@ -13,9 +13,16 @@ from datetime import datetime
 
 # ----------- Variaveis de configuração
 path_default = r"C:\WebScrapy"
+#path_default = r"F:\ProjetosDev\WebScrapy"
+
 path_dow2 = r"\\server\PUBLICO\Clientes" #directory alternative
+#path_dow2 = r"E:\Ludfor\arquivos_mov" #directory alternative
+
 path_copy = r'\\192.168.78.3\clientes\Ludfor\mainapp\static\faturas' #pasta de upload do site
+#path_copy = r'E:\Ludfor\arquivos2cloud' #pasta de upload do site
+
 path_2Cloud = r"\\192.168.78.3\temp\Log_Robo"
+#path_2Cloud = r"E:\Ludfor\arquivos2cloud\Log_Robo"
 
 path_dow = (path_default + r"\Dow") #Change default directory for downloads
 log_status = (path_default + r"\status.txt")
@@ -61,6 +68,7 @@ try:
     )
 
     browser = webdriver.Chrome(executable_path='C:\WebScrapy\chromedriver.exe',chrome_options=options)
+    #browser = webdriver.Chrome(executable_path='F:\ProjetosDev\WebScrapy\chromedriver.exe',chrome_options=options)
     browser.get("https://www.cpflempresas.com.br/")
 
     username = '010.295.140-38'

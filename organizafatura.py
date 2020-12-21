@@ -65,7 +65,7 @@ def inserefatunidade(path,arquivo,mes,ano,id_unidade,tipo):
         tparquivo = tipodearquivo(arquivo)
 
         sql = "INSERT INTO unidades_faturas VALUES (default,%s, %s, %s, %s, %s, %s)"
-        val = (id_unidade,mes,ano,caminho_completo,tipo,tparquivo,)
+        val = (mes,ano,caminho_completo,tipo,tparquivo,id_unidade,)
 
         conn2 = psycopg2.connect(conexao)
         insert = conn2.cursor()
@@ -80,9 +80,11 @@ def verificafim(path):
 
     conn = psycopg2.connect(conexao)
     consulta = conn.cursor()
-    consulta.execute("SELECT unidade.id FROM unidade inner join distribuidora on unidade.id_distribuidora = distribuidora.id "
-        " inner join modalidade on unidade.id_modalidade = modalidade.id "
-        " where distribuidora.descricao like '%RGE%' and fat_cpfl = 0 and ((ambiente = 1 and ccee_gestao = 1 and unidade.ccee_data_migracao <= '" + data_atual + "')"
+    consulta.execute("SELECT unidade.id FROM unidades_consumidoras as uc "        
+        " inner join distribuidora on uc.id_distribuidora = distribuidora.id "
+        " inner join modalidade on uc.id_modalidade = modalidade.id "
+        #" where distribuidora.descricao_ludfor like '%RGE%' and fat_cpfl = 0 and ((ambiente = 1 and ccee_gestao = 1 and unidade.ccee_data_migracao <= '" + data_atual + "')"
+        " where distribuidora.descricao_ludfor like '%RGE%' and fat_cpfl = 0 and ((ambiente = 1 and ccee_gestao = 1)"
         " or (ambiente = 0 and modalidade.descricao <> 'Baixa tensão' and id_empresa <> 514))")
 
     log = open(path, 'w')
@@ -102,11 +104,11 @@ def updatefatura(tipo,id_unidade):
     insert = conn.cursor()
 
     if tipo == 0: # altera campo da unidade para identificar que unidade encontra-se no site da CPFL
-        sql = "UPDATE unidade SET fat_cpfl = 1 WHERE id = %s"
+        sql = "UPDATE unidades_consumidoras SET fat_cpfl = 1 WHERE id = %s"
         val = (id_unidade,)
         insert.execute(sql,val)
     else: # inicio de varedura, zera campo da tabela
-        sql = "UPDATE unidade SET fat_cpfl = 0"
+        sql = "UPDATE unidades_consumidoras SET fat_cpfl = 0"
         insert.execute(sql)
 
     conn.commit()
@@ -120,7 +122,7 @@ def ambienteUnidade(id_unidade):
 
     conn = psycopg2.connect(conexao)
     cursor = conn.cursor()
-    cursor.execute("SELECT ambiente FROM unidade where unidade_consumidora = " + "'" + id_unidade + "'")
+    cursor.execute("SELECT ambiente FROM unidades_consumidoras where unidade_consumidora = " + "'" + id_unidade + "'")
 
     for row in cursor:
         ambiente = row[0]
@@ -136,15 +138,15 @@ def InsereUnidade(id_unidade,mes,ano):
 
     conn = psycopg2.connect(conexao)
     consulta = conn.cursor()
-    consulta.execute("SELECT id FROM unidade where unidade_consumidora = " + "'" + str(id_unidade) + "'")
+    consulta.execute("SELECT id FROM unidades_consumidoras where unidade_consumidora = " + "'" + str(id_unidade) + "'")
 
     for row in consulta:
         id = row[0]
         break
 
     insert = conn.cursor()
-    sql = "INSERT INTO fat_rge VALUES (default, %s, %s, %s, %s, %s,0)"
-    val = (id,id_unidade,mes,ano,data_atual,)
+    sql = "INSERT INTO fat_rge VALUES (default, %s, %s, %s, %s, 0, %s)"
+    val = (id_unidade,mes,ano,data_atual,id,)
     insert.execute(sql,val)
     conn.commit()
     conn.close()
@@ -163,15 +165,17 @@ def RealizaDow(id_unidade,mes,ano):
     data_filtro = (str(ano) + "-" + str(mes) + "-01")  
 
     #somente unidades livre (com gestão CCEE) ou cativo (menos baixa tensão), com distribuidra rge e rge sul e data de migração menor ou igual ao mes referencia (se ambiente livre)
-    sql = ("SELECT unidade.id, ccee_data_migracao, ambiente FROM unidade "
-        " inner join distribuidora on unidade.id_distribuidora = distribuidora.id "
-        " inner join modalidade on unidade.id_modalidade = modalidade.id "
-        " where unidade.unidade_consumidora = '" + str(id_unidade) + "' and ((ambiente = 1 and ccee_gestao = 1 and unidade.ccee_data_migracao <= '" + data_filtro + "')" 
-        " or (ambiente = 0 and modalidade.descricao <> 'Baixa tensão')) and distribuidora.descricao like '%RGE%' ")       
+    sql = ("SELECT uc.id, uc.ambiente FROM unidade "
+        " inner join unidades_consumidoras as uc on uc.id_unidade = unidade.id "
+        " inner join distribuidora on uc.id_distribuidora = distribuidora.id "
+        " inner join modalidade on uc.id_modalidade = modalidade.id "
+        #" where uc.unidade_consumidora = '" + str(id_unidade) + "' and ((ambiente = 1 and ccee_gestao = 1 and uc.ccee_data_migracao <= '" + data_filtro + "')" 
+        " where uc.unidade_consumidora = '" + str(id_unidade) + "' and ((ambiente = 1 and ccee_gestao = 1)" 
+        " or (ambiente = 0 and modalidade.descricao <> 'Baixa tensão')) and distribuidora.descricao_ludfor like '%RGE%' ")       
     gestao.execute(sql)
 
     for row in gestao:
-        print("ambiente: " + str(row[2]))    
+        print("ambiente: " + str(row[1]))    
         id = row[0]
         result = True
         break
@@ -182,7 +186,7 @@ def RealizaDow(id_unidade,mes,ano):
     if id > 0:
         updatefatura(0,id)
 
-        sql = ("SELECT unidade.id FROM fat_rge left join unidade on fat_rge.id_unidade = unidade.id where (unidade.unidade_consumidora = %s or fat_rge.unidade_consumidora = %s) and fat_rge.mes = %s and fat_rge.ano = %s ")
+        sql = ("SELECT uc.id FROM fat_rge left join unidades_consumidoras as uc on fat_rge.id_unidade_consumidora = uc.id where (uc.unidade_consumidora = %s or fat_rge.unidade_consumidora = %s) and fat_rge.mes = %s and fat_rge.ano = %s ")
         val = (id_unidade,id_unidade,mes,ano,)
         consulta = conn.cursor()
         consulta.execute(sql,val)
@@ -200,9 +204,9 @@ def RealizaDow(id_unidade,mes,ano):
 def MontaPasta(unidade_consumidora,path,path2,ano,mes,ano2):
     global conexao
 
-    sql = (" SELECT empresa.descricao, unidade.nome, distribuidora.descricao, unidade.id, unidade.ambiente "
-                    " FROM unidade inner join empresa on unidade.id_empresa = empresa.id "
-                    " inner join distribuidora on unidade.id_distribuidora = distribuidora.id where unidade_consumidora = '" + unidade_consumidora + "'")
+    sql = (" SELECT empresa.descricao, unidade.nome, distribuidora.descricao_ludfor, uc.id, uc.ambiente "
+                    " FROM unidade inner join empresa on unidade.id_empresa = empresa.id inner join unidades_consumidoras as uc on uc.id_unidade = unidade.id "
+                    " inner join distribuidora on UC.id_distribuidora = distribuidora.id where unidade_consumidora = '" + unidade_consumidora + "'")
 
     conn = psycopg2.connect(conexao)
     consulta = conn.cursor()
